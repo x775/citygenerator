@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 from PIL import Image
+
 
 def parse_image(filename):
     # We open the supplied image and convert it to a numpy array.
@@ -7,3 +9,15 @@ def parse_image(filename):
     # lists where each parent list corresponds to a row of pixel
     # values. All pixels contain [r, g, b, a]-values.
     return np.asarray(Image.open(filename))
+    
+    
+def count_occurrences(array):
+    unique, counts = np.unique(array, return_counts=True)
+    return np.asarray((unique,counts)).T
+
+t = parse_image("testshot.png")
+c = count_occurrences(t)
+
+
+
+print(c)
