@@ -36,7 +36,7 @@ def find_coordinates_centroid(coordinates):
     return (coordinate_x_sum / coordinate_length, coordinate_y_sum / coordinate_length)
 
 
-def find_radial_rule_centers(image_arr, legend_color):s
+def find_radial_rule_centers(image_arr, legend_color):
     indices = find_legend_color_coordinates(image_arr, legend_color)
     return find_coordinates_centroid(indices)
 
