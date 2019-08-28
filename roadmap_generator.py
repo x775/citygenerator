@@ -13,11 +13,11 @@ from queue import Queue
 from enum import Enum
 from scipy.spatial import cKDTree
 import numpy as np
-from segment import Segment
-from input_setup import *
-from growth_rules.grid import *
-from helpers import *
-from growth_rules.grid import *
+from python.city_generation.roadmap_generation.segment import Segment
+from python.city_generation.roadmap_generation.input_setup import *
+from python.city_generation.roadmap_generation.growth_rules.grid import *
+from python.city_generation.roadmap_generation.helpers import *
+from python.city_generation.roadmap_generation.growth_rules.grid import *
 
 
 class Rules(Enum):
@@ -39,9 +39,9 @@ def generate_roadmap(axiom):
         segment_front_queue.put(segment)
 
     # Iterate through the front queue, incrementally building the road network.
-    max_iterations = 200
+    max_iterations = 1000
     i = 0
-    while not segment_front_queue.empty() and i < max_iterations:
+    while not segment_front_queue.empty and i < max_iterations:
         current_segment = segment_front_queue.get()
 
         suggested_segments = generate_suggested_segments(current_segment, rule_image_array, population_image_array)
@@ -136,18 +136,12 @@ def verify_segments(suggested_segments, segment_added_list):
 
     max_x = 1000 # hardcoded maximum x coordinate value
     max_y = 1000 # hardcoded maximum y coordinate value
-    max_distance = 1 # hardcoded maximum distance that two vertices may be 
+    max_distance = 0.5 # hardcoded maximum distance that two vertices may be 
 
-    segment_vertices = list(itertools.chain.from_iterable([[segment.start_vert.position, segment.end_vert.position] for segment in segment_added_list]))
+    segment_vertices = [[segment.start_vert, segment.end_vert] for segment in segment_added_list]
+    vertices_coordinates = list(set([[vertex.position[0], vertex.position[1]] for vertex in segment_vertices]))
     
-    uniques = []
-    for vertex in segment_vertices:
-        if not any(np.array_equal(vertex, unique_vertex) for unique_vertex in uniques):
-            uniques.append(vertex)
-    # vertices_coordinates = list(set(segment_vertices))
-    # vertices_coordinates = list(set([[vertex.position[0], vertex.position[1]] for vertex in segment_vertices]))
-    
-    vertex_tree = cKDTree(uniques)
+    vertex_tree = cKDTree(vertices_coordinates)
 
     verified_segments = []
 
@@ -155,19 +149,13 @@ def verify_segments(suggested_segments, segment_added_list):
         if segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y:
             continue # segment is not considered. I.e. not added to verified_segments
         
-        _, result_index = vertex_tree.query(segment.end_vert.position, k=2, distance_upper_bound=max_distance)
-        vertex_is_close = False
+        _, result_index = vertex_tree.query(segment.end_vert, distance_upper_bound=max_distance)
 
         # If no results are found, result_index will be length of vertices_coordinates.
-        # if result_index < len(uniques):
-        #     vertex_is_close = True
-
-        if result_index[1] != len(uniques):
-            result_index = result_index[1]
+        if result_index < len(vertices_coordinates):
             vertex_is_close = True
             
         closest_value = np.inf
-        intersecting_segment = None
         
         for old_segment in segment_added_list:
             intersection = compute_intersection(segment, old_segment)
@@ -193,14 +181,14 @@ def verify_segments(suggested_segments, segment_added_list):
             old_segment_split = Segment.from_verts(new_segment.end_vert, intersecting_segment_old_end)
             segment_added_list.append(old_segment_split)
         elif vertex_is_close and not intersecting_segment:
-            close_vertex_position = np.array(uniques[result_index])
+            close_vertex_position = np.array(vertices_coordinates[result_index])
             new_segment = Segment(np.array([segment.start_vert.position, close_vertex_position]))
             verified_segments.append(new_segment)
         elif vertex_is_close and intersecting_segment:
-            close_vertex_position = np.array(uniques[result_index])
+            close_vertex_position = np.array(vertices_coordinates[result_index])
             
-            if (np.array_equal(close_vertex_position, intersecting_segment.start_vert.position) or
-                np.array_equal(close_vertex_position, intersecting_segment.end_vert.position)):
+            if (np.array_equal(close_vertex_position, intersecting_segment.start_vert.pos) or
+                np.array_equal(close_vertex_position, intersecting_segment.end_vert.pos)):
                 new_segment = Segment(np.array([segment.start_vert.position, close_vertex_position]))
                 verified_segments.append(new_segment)
             else:
@@ -215,8 +203,6 @@ def verify_segments(suggested_segments, segment_added_list):
 
                 old_segment_split = Segment.from_verts(new_segment.end_vert, intersecting_segment_old_end)
                 segment_added_list.append(old_segment_split)
-        
-        verified_segments.append(segment)
     
     return verified_segments
 
@@ -229,7 +215,7 @@ def verify_segments(suggested_segments, segment_added_list):
 
 
 def get_population_density_values(segment, population_image_array):
-    return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
+    return population_image_array[segment.end_vert.position[1]][segment.end_vert.position[0]]
 
 
 # normalise pixel values to single value in range [0,1]
@@ -238,7 +224,6 @@ def normalise_pixel_values(image_array):
 
 
 if __name__ == "__main__":
-    random.seed(42)
     coords = np.array([[500,500], [505, 500]])
     axiom = Segment(coords)
     generate_roadmap([axiom])
