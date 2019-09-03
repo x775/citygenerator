@@ -28,56 +28,33 @@ class Rules(Enum):
     RULE_MINOR = 5
 
 
-def generate_roadmap(axiom):
+def generate_road_network(config):
     segment_added_list = []
+    vertex_added_set = {}
     segment_front_queue = Queue(maxsize=0)
-    rule_image_array = parse_image(os.getcwd() + "\\rule_image.png")
-    population_image_array = normalise_pixel_values(parse_image(os.getcwd() + "\\population_density.png"))
 
-    for segment in axiom:
+    for segment in config.axiom:
         segment_added_list.append(segment)
         segment_front_queue.put(segment)
+        vertex_added_set.update([segment.start_vert, segment.end_vert])
 
     # Iterate through the front queue, incrementally building the road network.
-    max_iterations = 200
-    i = 0
-    while not segment_front_queue.empty() and i < max_iterations:
+    iteration = 0
+    while not segment_front_queue.empty() and iteration < config.max_iterations:
         current_segment = segment_front_queue.get()
 
-        suggested_segments = generate_suggested_segments(current_segment, rule_image_array, population_image_array)
-        verified_segments = verify_segments(suggested_segments, segment_added_list)
+        suggested_segments = generate_suggested_segments(current_segment, config.rule_image_array, config.population_image_array)
+        verified_segments = verify_segments(config, suggested_segments, segment_added_list, vertex_added_set)
         
         for segment in verified_segments:
             segment_front_queue.put(segment)
+            vertex_added_set.update([segment.start_vert, segment.end_vert])
         
         segment_added_list.extend(verified_segments)
 
-        i += 1
+        iteration += 1
 
         # check if segment is seed, if so, readd
-
-    # Dump to json
-    output = {}
-    output['roadSegments'] = []
-    output['roadVertices'] = []
-    for segment in segment_added_list:
-        output['roadVertices'].append({
-            'position': {
-                'x': float(segment.start_vert.position[0]),
-                'y': float(segment.start_vert.position[1])
-                }})
-        output['roadVertices'].append({
-            'position': {
-                'x': float(segment.end_vert.position[0]),
-                'y': float(segment.end_vert.position[1])
-        }})
-        output['roadSegments'].append({
-            'startVertIndex': len(output['roadVertices']) - 2,
-            'endVertIndex': len(output['roadVertices']) - 1
-        })
-
-    with open("roadnetwork.json", "w") as out:
-        json.dump(output, out)
         
 
 def generate_suggested_segments(segment, rule_image_array, population_image_array):
@@ -128,26 +105,17 @@ def get_roadmap_rule(segment, image_array):
      #   return Rules.RULE_MINOR
     
 
-def verify_segments(suggested_segments, segment_added_list):
+def verify_segments(config, suggested_segments, segment_added_list, vertex_added_set):
     # Check out of bounds
     # Check too close to existing
     # Check if intersect existing
     # Check if stops close to existing
 
-    max_x = 1000 # hardcoded maximum x coordinate value
-    max_y = 1000 # hardcoded maximum y coordinate value
-    max_distance = 1 # hardcoded maximum distance that two vertices may be 
-
-    segment_vertices = list(itertools.chain.from_iterable([[segment.start_vert.position, segment.end_vert.position] for segment in segment_added_list]))
-    
-    uniques = []
-    for vertex in segment_vertices:
-        if not any(np.array_equal(vertex, unique_vertex) for unique_vertex in uniques):
-            uniques.append(vertex)
-    # vertices_coordinates = list(set(segment_vertices))
-    # vertices_coordinates = list(set([[vertex.position[0], vertex.position[1]] for vertex in segment_vertices]))
-    
-    vertex_tree = cKDTree(uniques)
+    max_x = config.road_rules_array.shape[1] # maximum x coordinate
+    max_y = config.road_rules_array.shape[0] # maximum y coordinate
+    max_distance = config.road_segment_max_length # maximum length of a road segment
+    vertex_added_list = [vertex.position for vertex in vertex_added_set] # list of unique vertex positions
+    vertex_tree = cKDTree(vertex_added_list) # KDTree of unique vertices used to compute nearest neighbours
 
     verified_segments = []
 
@@ -225,7 +193,6 @@ def verify_segments(suggested_segments, segment_added_list):
         # close, but not intersected; connect them
         # close, and intersected; connect at intersection
         # close, and intersected, and close to intersected vertex; connect them
-
 
 
 def get_population_density_values(segment, population_image_array):

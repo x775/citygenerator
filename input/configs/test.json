@@ -1,0 +1,25 @@
+{
+    "axiom": {
+        "description": "Default starting segments.",
+        "value": [
+            [[495,500],[500,505]],
+            [[505,510],[510,515]]
+        ]
+    },
+    "rule_image_name": {
+        "description": "Name of image used for road network pattern rules.",
+        "value": "rule_image.png"
+    },
+    "population_density_image_name": {
+        "description": "Name of image used for population density.",
+        "value": "population_density.png"
+    },
+    "max_road_network_iterations": {
+        "description": "maximum iterations allowed for generating road segments",
+        "value": 500
+    },
+    "road_segment_max_length": {
+        "description": "maximum length of a road segment",
+        "value": 1
+    }
+}

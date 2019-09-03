@@ -1,8 +1,8 @@
 import os
 import json
 import numpy as np
-from input_setup import *
-from roadmap_generation.vertex import Vertex
+from utilities import parse_image
+from road_network.segment import Segment
 
 class ConfigLoader:
     def __init__(self, config=None):
@@ -21,34 +21,10 @@ class ConfigLoader:
 
 
     def init_road_network(self):
-
-        self.maxLength = max(self.radiallMax, self.gridlMax, self.organiclMax,
-                            self.minor_roadlMax, self.seedlMax)
-        
-        # Create initial list of starter Vertex-objects as supplied in config.
-        self.axiom = [Vertex(np.array([coordinate[0], coordinate[1]])) for coordinate in self.axiom]
+        # Create starting segments based on config axiom.
+        self.axiom = [Segment(np.array(segment_coordinates)) for segment_coordinates in self.axiom]
 
         # Parse road rule map and population density map.
-        self.road_rules = parse_image(self.road_rule_path)
-        self.population_density = parse_image(self.population_density_path)
-
-        # Find city centers based on population density
-        # self.city_centers = find_legend_color_coordinates(self.population_density, self.population_density_legend)
-
-        # Find radial rule centers
-        # TODO: currently only works for a single radial pattern
-        self.radial_rule_centers = find_radial_rule_centers(self.road_rules, self.road_rules_legend)
-
-
-        
-
-
-"""
-Config file should contain
-
-* one config file per city; contains all input
-* list of relevant legends for input images
-* list of population density segmentations (last in list = highest density)
-
-
-"""
+        path = "../input/images/"
+        self.road_rules_array = parse_image(path + self.rule_image_name)
+        self.population_density_array = parse_image(path + self.population_density_image_name)
