@@ -22,7 +22,7 @@ class Rules(Enum):
 
 def generate_road_network(config):
     segment_added_list = []
-    vertex_added_set = {}
+    vertex_added_set = set()
     segment_front_queue = Queue(maxsize=0)
 
     for segment in config.axiom:
@@ -32,10 +32,10 @@ def generate_road_network(config):
 
     # Iterate through the front queue, incrementally building the road network.
     iteration = 0
-    while not segment_front_queue.empty() and iteration < config.max_iterations:
+    while not segment_front_queue.empty() and iteration < config.max_road_network_iterations:
         current_segment = segment_front_queue.get()
 
-        suggested_segments = generate_suggested_segments(current_segment, config.rule_image_array, config.population_image_array)
+        suggested_segments = generate_suggested_segments(current_segment, config.road_rules_array, config.population_density_array)
         verified_segments = verify_segments(config, suggested_segments, segment_added_list, vertex_added_set)
         
         for segment in verified_segments:
@@ -56,7 +56,7 @@ def generate_road_network(config):
 # Generates suggested segments based on the road rule at the end position of the input segment
 def generate_suggested_segments(segment, rule_image_array, population_image_array):
     roadmap_rule = get_roadmap_rule(segment, rule_image_array)
-    population_density = get_population_density_values(segment, population_image_array)
+    population_density = get_population_density_values(segment, normalise_pixel_values(population_image_array))
 
     if roadmap_rule == Rules.RULE_GRID:
          suggested_segments = grid(segment, population_density)

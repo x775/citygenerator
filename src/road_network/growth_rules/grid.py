@@ -19,7 +19,7 @@ def grid(segment, population_density):
         straight_segment_array = random.uniform(road_mininum_length, road_maximum_length) * segment_unit_vector
         straight_segment_array += segment.end_vert.position
         new_segment_array = np.array([segment.end_vert.position, straight_segment_array])
-        new_segment = Segment(new_segment_array)
+        new_segment = Segment(segment_array=new_segment_array)
         new_segment.is_seed = True
         suggested_segments.append(new_segment)
 
@@ -38,14 +38,14 @@ def grid(segment, population_density):
     # Generate new segment turning right
     if random.uniform(0, 1) <= road_turn_probability:
         new_segment_array = np.array([segment.end_vert.position, turn_road_segment_array])
-        new_segment = Segment(new_segment_array)
+        new_segment = Segment(segment_array=new_segment_array)
         new_segment.is_seed = False
         suggested_segments.append(new_segment)
 
     # Generate new segment turning left
     if random.uniform(0, 1) <= road_turn_probability:
         new_segment_array = np.array([segment.end_vert.position, turn_road_segment_array_left])
-        new_segment = Segment(new_segment_array)
+        new_segment = Segment(segment_array=new_segment_array)
         new_segment.is_seed = False
         suggested_segments.append(new_segment)
 

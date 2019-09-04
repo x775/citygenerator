@@ -1,4 +1,5 @@
 import os
+import time
 import random
 import numpy as np
 from src.config_loader import ConfigLoader
@@ -16,7 +17,9 @@ def generate(config_path):
 
 if __name__ == "__main__":
     random.seed(42)
-    print(len(generate(os.getcwd() + "\\input\\configs\\test.json")))
+    t = time.process_time()
+    print(len(generate(os.getcwd() + "/input/configs/test.json")))
+    print(time.process_time() - t)
 
 # step 2: railroad network
 # step 3: parcels

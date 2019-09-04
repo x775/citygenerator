@@ -9,7 +9,7 @@ class ConfigLoader:
         
         try:
             with open(config_path, "r") as config_file:
-                for key, value in json.loads(config_file).items():
+                for key, value in json.load(config_file).items():
                     setattr(self, key, value["value"])
         except FileNotFoundError:
             print("Incorrect or missing config file!")
@@ -21,9 +21,9 @@ class ConfigLoader:
 
     def init_road_network(self):
         # Create starting segments based on config axiom.
-        self.axiom = [Segment(np.array(segment_coordinates)) for segment_coordinates in self.axiom]
+        self.axiom = [Segment(segment_array=np.array(segment_coordinates)) for segment_coordinates in self.axiom]
 
         # Parse road rule map and population density map.
-        path = "../input/images/"
+        path = os.getcwd() + "/input/images/"
         self.road_rules_array = parse_image(path + self.rule_image_name)
         self.population_density_array = parse_image(path + self.population_density_image_name)
