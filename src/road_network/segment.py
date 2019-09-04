@@ -1,10 +1,16 @@
 import numpy as np
-from vertex import Vertex
+from src.road_network.vertex import Vertex
 
 class Segment:
-    def __init__(self, segment_array):
-        self.start_vert = Vertex(segment_array[0])
-        self.end_vert = Vertex(segment_array[1])
+    def __init__(self, segment_start=None, segment_end=None, segment_array=None):
+        if segment_start and segment_end:
+            self.start_vert = segment_start
+            self.end_vert = segment_end
+        elif segment_array is not None:
+            self.start_vert = Vertex(segment_array[0])
+            self.end_vert = Vertex(segment_array[1])
+        else:
+            raise ValueError("segment start and end or segment array must be supplied!")
         self.is_seed = False
         self.is_major_road = False
     

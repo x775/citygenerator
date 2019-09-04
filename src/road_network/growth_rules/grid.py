@@ -1,7 +1,7 @@
 import random
 import numpy as np
-from segment import Segment
-from helpers import rotate
+from src.road_network.helpers import rotate
+from src.road_network.segment import Segment
 
 def grid(segment, population_density):
     road_straight_probability = 1  # [0,1]

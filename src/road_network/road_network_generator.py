@@ -1,23 +1,15 @@
-# top down implementation of the Josauder implementation from github
-# goal is to create a working minimal prototype
-# refactoring and commenting should be done after implementation is done
-
 # city size: 10.000 m x 10.000 m
 # input image size: 1000x1000
 # pixel size: 10 m x 10 m
 
-import os
-import json
-import itertools
-from queue import Queue
-from enum import Enum
-from scipy.spatial import cKDTree
 import numpy as np
-from segment import Segment
-from input_setup import *
-from growth_rules.grid import *
-from helpers import *
-from growth_rules.grid import *
+from enum import Enum
+from queue import Queue
+from scipy.spatial import cKDTree
+from src.road_network.vertex import Vertex
+from src.road_network.segment import Segment
+from src.road_network.growth_rules.grid import grid
+from src.road_network.helpers import compute_intersection
 
 
 class Rules(Enum):
@@ -55,8 +47,13 @@ def generate_road_network(config):
         iteration += 1
 
         # check if segment is seed, if so, readd
+
+    return segment_added_list
         
 
+# INPUT:    Segment, numpy.Array, numpy.Array
+# OUTPUT:   List
+# Generates suggested segments based on the road rule at the end position of the input segment
 def generate_suggested_segments(segment, rule_image_array, population_image_array):
     roadmap_rule = get_roadmap_rule(segment, rule_image_array)
     population_density = get_population_density_values(segment, population_image_array)
@@ -105,94 +102,108 @@ def get_roadmap_rule(segment, image_array):
      #   return Rules.RULE_MINOR
     
 
+# INPUT:    ConfigLoader, Segment, List, Set
+# OUTPUT:   List
+# Local constraints are used to verify the suggested segments. Segments are
+# either ignored if they are out of bounds or altered to fit the existing road network
 def verify_segments(config, suggested_segments, segment_added_list, vertex_added_set):
-    # Check out of bounds
-    # Check too close to existing
-    # Check if intersect existing
-    # Check if stops close to existing
-
     max_x = config.road_rules_array.shape[1] # maximum x coordinate
     max_y = config.road_rules_array.shape[0] # maximum y coordinate
-    max_distance = config.road_segment_max_length # maximum length of a road segment
-    vertex_added_list = [vertex.position for vertex in vertex_added_set] # list of unique vertex positions
-    vertex_tree = cKDTree(vertex_added_list) # KDTree of unique vertices used to compute nearest neighbours
+    max_distance = config.near_vertex_max_distance # maximum allowed distance between road vertices
+    vertex_added_list = list(vertex_added_set) # list of unique vertex positions
+    # KDTree of unique vertices used to compute nearest neighbours
+    vertex_tree = cKDTree([vertex.position for vertex in vertex_added_list])
 
     verified_segments = []
 
-    for segment in suggested_segments:
-        if segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y:
-            continue # segment is not considered. I.e. not added to verified_segments
+    # INPUT:    Segment, Segment  
+    # OUTPUT:   -
+    # Creates a new intersection using the two segments. The existing segment is
+    # split into two parts and its reference updated in the segment_added_list.
+    def _create_intersection(new_segment, intersecting_segment):
+        segment_vector = (segment.end_vert.position - segment.start_vert.position)
+        abs_intersection = Vertex(intersection[0] * segment_vector + segment.start_vert.position)
+        new_segment = Segment(segment_start=new_segment.start_vert, segment_end=abs_intersection)
+        old_segment_split = Segment(segment_start=new_segment.end_vert, segment_end=intersecting_segment.end_vert)
+        intersecting_segment.end_vert = new_segment.end_vert
+
+        verified_segments.append(new_segment)
+        segment_added_list.append(old_segment_split)
         
-        _, result_index = vertex_tree.query(segment.end_vert.position, k=2, distance_upper_bound=max_distance)
+        
+    for segment in suggested_segments:
+        # We do not consider the segment further if it breaks the boundaries.
+        if segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y:
+            continue 
+        
+        # We query the KDTree to find the closest vertex to the end position of
+        # the new segment. We use k=2 to find the two closest neighbours because
+        # the closest vertex will always be the queried vertex itself.
+        _, result_indexes = vertex_tree.query(segment.end_vert.position, k=2, distance_upper_bound=max_distance)
         vertex_is_close = False
-
-        # If no results are found, result_index will be length of vertices_coordinates.
-        # if result_index < len(uniques):
-        #     vertex_is_close = True
-
-        if result_index[1] != len(uniques):
-            result_index = result_index[1]
-            vertex_is_close = True
-            
         closest_value = np.inf
         intersecting_segment = None
+
+        # If the second element of result_indexes is not equal the length
+        # of the vertex_added_list, a nearby vertex has been found
+        if result_indexes[1] != len(vertex_added_list):
+            result_index = result_indexes[1]
+            vertex_is_close = True
         
+        # TODO: check distance to avoid computing every intersection
         for old_segment in segment_added_list:
             intersection = compute_intersection(segment, old_segment)
 
+            # We check whether the new segment intersects an existing segment.
+            # If the relative point of intersection is between 0.00001 and
+            # 0.99999, an intersection is detected. If multiple intersections
+            # are detected, use the intersection closest to the start position
+            # of the new segment.
             if(intersection[0] > 0.00001 and 
                intersection[0] < 0.99999 and 
                intersection[1] > 0.00001 and 
                intersection[1] < 0.99999 and 
                intersection[0] < closest_value):
-                intersecting_segment = old_segment
+                intersecting_segment = old_segment 
                 closest_value = intersection[0]
         
+        # If the segment intersects an existing segment, and an existing vertex
+        # is not nearby, we create a new intersection (and thus vertex) and
+        # split the existing segment into two parts.
         if intersecting_segment and not vertex_is_close:
-            segment_vector = (segment.end_vert.position - segment.start_vert.position)
-            abs_intersection = intersection[0] * segment_vector + segment.start_vert.position
-            new_segment = Segment(np.array([segment.start_vert.position, abs_intersection]))
-            verified_segments.append(new_segment)
-            
-            intersecting_segment_old_end = intersecting_segment.end_vert
-            # intersecting_segment.coordinates = np.array([intersecting_segment.start_vert.position, abs_intersection])
-            intersecting_segment.end_vert = new_segment.end_vert
-
-            old_segment_split = Segment.from_verts(new_segment.end_vert, intersecting_segment_old_end)
-            segment_added_list.append(old_segment_split)
-        elif vertex_is_close and not intersecting_segment:
-            close_vertex_position = np.array(uniques[result_index])
-            new_segment = Segment(np.array([segment.start_vert.position, close_vertex_position]))
-            verified_segments.append(new_segment)
-        elif vertex_is_close and intersecting_segment:
-            close_vertex_position = np.array(uniques[result_index])
-            
-            if (np.array_equal(close_vertex_position, intersecting_segment.start_vert.position) or
-                np.array_equal(close_vertex_position, intersecting_segment.end_vert.position)):
-                new_segment = Segment(np.array([segment.start_vert.position, close_vertex_position]))
-                verified_segments.append(new_segment)
-            else:
-                segment_vector = (segment.end_vert.position - segment.start_vert.position)
-                abs_intersection = intersection[0] * segment_vector + segment.start_vert.position
-                new_segment = Segment(np.array([segment.start_vert.position, abs_intersection]))
-                verified_segments.append(new_segment)
-            
-                intersecting_segment_old_end = intersecting_segment.end_vert
-                # intersecting_segment.coordinates = np.array([intersecting_segment.start_vert.position, abs_intersection])
-                intersecting_segment.end_vert = new_segment.end_vert
-
-                old_segment_split = Segment.from_verts(new_segment.end_vert, intersecting_segment_old_end)
-                segment_added_list.append(old_segment_split)
+            _create_intersection(segment, intersecting_segment)
         
-        verified_segments.append(segment)
+        # If the segment does not intersect an existing segment but is close to
+        # an existing vertex, we snap the end position of the segment to the
+        # existing vertex.
+        elif vertex_is_close and not intersecting_segment:
+            close_vertex = vertex_added_list[result_index]
+            new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
+            verified_segments.append(new_segment)
+
+        # If the segment intersects an existing segment and is also close to an
+        # existing vertex, we consider two different cases: Where the vertex is
+        # part of the intersecting segment and not.
+        elif vertex_is_close and intersecting_segment:
+            close_vertex = vertex_added_list[result_index]
+            
+            # If the existing vertex is part of the intersecting segment, we
+            # snap the end position of the segment to the intersecting segment.
+            if (close_vertex is intersecting_segment.start_vert or 
+                close_vertex is intersecting_segment.end_vert):
+                new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
+                verified_segments.append(new_segment)
+            # If the existing vertex is not part of the intersecting segment, we
+            # create a new intersection (and thus vertex) and split the existing
+            # segment into two parts.
+            else:
+                _create_intersection(segment, intersecting_segment)
+        # If no local constraints apply, and the segment does not break outer
+        # bounds, we append it without alterations.
+        else:
+            verified_segments.append(segment)
     
     return verified_segments
-
-            
-
-        # close, but not intersected; connect them
-        # close, and intersected; connect at intersection
-        # close, and intersected, and close to intersected vertex; connect them
 
 
 def get_population_density_values(segment, population_image_array):
@@ -202,10 +213,3 @@ def get_population_density_values(segment, population_image_array):
 # normalise pixel values to single value in range [0,1]
 def normalise_pixel_values(image_array):
     return image_array[:,:,0] / 255
-
-
-if __name__ == "__main__":
-    random.seed(42)
-    coords = np.array([[500,500], [505, 500]])
-    axiom = Segment(coords)
-    generate_roadmap([axiom])

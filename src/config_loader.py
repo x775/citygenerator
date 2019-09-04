@@ -1,15 +1,14 @@
 import os
 import json
 import numpy as np
-from utilities import parse_image
-from road_network.segment import Segment
+from src.utilities import parse_image
+from src.road_network.segment import Segment
 
 class ConfigLoader:
-    def __init__(self, config=None):
-        directory = os.getcwd()
+    def __init__(self, config_path=None):
         
         try:
-            with open(directory + "/configs/" + config + ".json", "r") as config_file:
+            with open(config_path, "r") as config_file:
                 for key, value in json.loads(config_file).items():
                     setattr(self, key, value["value"])
         except FileNotFoundError:

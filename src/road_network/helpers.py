@@ -1,9 +1,11 @@
 import numpy as np
 
-# file containing general helper functions
-
+# INPUT:    numpy.Array, int/float
+# OUTPUT:   numpy.Array
+# rotates a vector around its starting point
 def rotate(vector, angle):
 
+    # Often used special case
     if angle == 90:
         return np.array([-vector[1], vector[0]])
     
@@ -13,6 +15,9 @@ def rotate(vector, angle):
     return np.dot(vector, rotation_matrix)
 
 
+# INPUT:    Segment, Segment
+# OUTPUT:   numpy.Array
+# Computes the normalised position of the intersection on segment_one.
 def compute_intersection(segment_one, segment_two):
     segment_one_start = segment_one.start_vert.position
     segment_one_sub = segment_one.end_vert.position - segment_one.start_vert.position
