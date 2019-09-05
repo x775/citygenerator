@@ -2,8 +2,8 @@
     "axiom": {
         "description": "Default starting segments.",
         "value": [
-            [[495,500],[500,505]],
-            [[505,510],[510,515]]
+            [[500,500],[500,505]],
+            [[505,510],[510,510]]
         ]
     },
     "rule_image_name": {
@@ -16,10 +16,42 @@
     },
     "max_road_network_iterations": {
         "description": "maximum iterations allowed for generating road segments",
-        "value": 1000
+        "value": 500
     },
     "near_vertex_max_distance": {
         "description": "maximum allowed distance between road vertices",
         "value": 1
+    },
+    "grid_straight_road_probability": {
+        "description": "probability (0-1) of a road going straight being generated for the grid pattern",
+        "value": 1
+    },
+    "grid_road_turn_probability": {
+        "description": "probability that a turn will be generated for the grid pattern",
+        "value": 0.1
+    },
+    "grid_road_min_length": {
+        "description": "minimum length of a road segment for the grid pattern",
+        "value": 5
+    },
+    "grid_road_max_length": {
+        "description": "maximum length of a road segment for the grid pattern",
+        "value": 5
+    },
+    "organic_straight_road_probability": {
+        "description": "probability (0-1) of a road going straight being generated for the organic pattern",
+        "value": 1
+    },
+    "organic_road_turn_probability": {
+        "description": "probability that a turn will be generated for the organic pattern",
+        "value": 0.2
+    },
+    "organic_road_min_length": {
+        "description": "minimum length of a road segment for the organic pattern",
+        "value": 3
+    },
+    "organic_road_max_length": {
+        "description": "maximum length of a road segment for the organic pattern",
+        "value": 7
     }
 }

@@ -9,6 +9,7 @@ from scipy.spatial import cKDTree
 from src.road_network.vertex import Vertex
 from src.road_network.segment import Segment
 from src.road_network.growth_rules.grid import grid
+from src.road_network.growth_rules.organic import organic
 from src.road_network.helpers import compute_intersection
 
 
@@ -35,7 +36,7 @@ def generate_road_network(config):
     while not segment_front_queue.empty() and iteration < config.max_road_network_iterations:
         current_segment = segment_front_queue.get()
 
-        suggested_segments = generate_suggested_segments(current_segment, config.road_rules_array, config.population_density_array)
+        suggested_segments = generate_suggested_segments(config, current_segment, config.road_rules_array, config.population_density_array)
         verified_segments = verify_segments(config, suggested_segments, segment_added_list, vertex_added_set)
         
         for segment in verified_segments:
@@ -51,16 +52,17 @@ def generate_road_network(config):
     return segment_added_list
         
 
-# INPUT:    Segment, numpy.Array, numpy.Array
+# INPUT:    ConfigLoader, Segment, numpy.Array, numpy.Array
 # OUTPUT:   List
 # Generates suggested segments based on the road rule at the end position of the input segment
-def generate_suggested_segments(segment, rule_image_array, population_image_array):
+def generate_suggested_segments(config, segment, rule_image_array, population_image_array):
     roadmap_rule = get_roadmap_rule(segment, rule_image_array)
     population_density = get_population_density_values(segment, normalise_pixel_values(population_image_array))
 
     if roadmap_rule == Rules.RULE_GRID:
-         suggested_segments = grid(segment, population_density)
+        suggested_segments = grid(config, segment, population_density)
     elif roadmap_rule == Rules.RULE_ORGANIC:
+        suggested_segments = organic(config, segment, population_density)
         pass
         # :)
     elif roadmap_rule == Rules.RULE_RADIAL:
@@ -82,7 +84,7 @@ def generate_suggested_segments(segment, rule_image_array, population_image_arra
 # x,y for the vertex we are looking at.
 def get_roadmap_rule(segment, image_array):
 
-    return Rules.RULE_GRID
+    return Rules.RULE_ORGANIC
 
     #if segment.is_seed:
     #    return Rules.RULE_SEED
