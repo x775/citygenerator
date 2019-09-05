@@ -122,9 +122,9 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
     # OUTPUT:   -
     # Creates a new intersection using the two segments. The existing segment is
     # split into two parts and its reference updated in the segment_added_list.
-    def _create_intersection(new_segment, intersecting_segment):
+    def _create_intersection(new_segment, intersecting_segment, intersection_value):
         segment_vector = (segment.end_vert.position - segment.start_vert.position)
-        abs_intersection = Vertex(intersection[0] * segment_vector + segment.start_vert.position)
+        abs_intersection = Vertex(intersection_value * segment_vector + segment.start_vert.position)
         new_segment = Segment(segment_start=new_segment.start_vert, segment_end=abs_intersection)
         old_segment_split = Segment(segment_start=new_segment.end_vert, segment_end=intersecting_segment.end_vert)
         intersecting_segment.end_vert = new_segment.end_vert
@@ -173,7 +173,7 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
         # is not nearby, we create a new intersection (and thus vertex) and
         # split the existing segment into two parts.
         if intersecting_segment and not vertex_is_close:
-            _create_intersection(segment, intersecting_segment)
+            _create_intersection(segment, intersecting_segment, closest_value)
         
         # If the segment does not intersect an existing segment but is close to
         # an existing vertex, we snap the end position of the segment to the
@@ -199,7 +199,7 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
             # create a new intersection (and thus vertex) and split the existing
             # segment into two parts.
             else:
-                _create_intersection(segment, intersecting_segment)
+                _create_intersection(segment, intersecting_segment, closest_value)
         # If no local constraints apply, and the segment does not break outer
         # bounds, we append it without alterations.
         else:
