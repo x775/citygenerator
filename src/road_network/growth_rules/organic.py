@@ -14,17 +14,8 @@ def organic(config, segment, population_density):
 
     suggested_segments = []
 
-    import warnings
-    warnings.filterwarnings('error')
     # Compute the unit vector of the given segment to determine direction.
-    try: 
-        segment_unit_vector = (segment.end_vert.position - segment.start_vert.position)/segment.segment_norm()
-    except RuntimeWarning:
-        print(segment)
-        print(segment.end_vert.position)
-        print(segment.start_vert.position)
-        print(segment.segment_norm())
-        input('Ha+haa')
+    segment_unit_vector = (segment.end_vert.position - segment.start_vert.position)/segment.segment_norm()
 
     # Generate a new segment going straight.
     if random.uniform(0, 1) <= road_straight_probability:

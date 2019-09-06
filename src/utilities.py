@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import skimage.morphology
 
 # INPUT:    String
 # OUTPUT:   numpy.Array
@@ -33,12 +34,27 @@ def find_coordinates_centroid(coordinates):
     coordinate_y_sum = np.sum(coordinates[:, 1])
     return (coordinate_x_sum / coordinate_length, coordinate_y_sum / coordinate_length)
 
-# INPUT:    numpy.Array
-# OUTPUT:   Tuple
-def find_radial_rule_centers(image_arr, legend_color):
-    indices = find_legend_color_coordinates(image_arr, legend_color)
-    return find_coordinates_centroid(indices)
 
+#INPUT:     numpy.Array, List
+#OUTPUT:    List
+def find_legend_centers(image_array, legend):
+    # Find all coordinates matching the specified legend.
+    legend_indices = find_legend_color_coordinates(image_array, legend)
+    
+    # Create a Boolean matrix of size image_width x image_height and mark every
+    # cell as either True or False depending on whether the legend colour is
+    # present in that pixel. 
+    legend_matches = np.zeros((np.shape(image_array)[0], np.shape(image_array)[1]), dtype=bool)
+    legend_matches[legend_indices[:,0], legend_indices[:,1]] = True
 
+    # Find clusters of the legend in the array and label them.
+    labeled_matches = skimage.morphology.label(legend_matches)
 
-# TODO: implement clustering for multiple clusters of same legend color
+    # Create list of coordinates for each cluster in the array.
+    clusters = [list(zip(y, x)) for y, x in 
+               [(labeled_matches == cluster).nonzero() for cluster in range(1, labeled_matches.max()+1)]]
+               
+    # Find the centroids of each cluster.
+    centroids = [find_coordinates_centroid(coords) for coords in np.array(clusters)]
+
+    return centroids
