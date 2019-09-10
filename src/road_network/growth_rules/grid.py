@@ -1,8 +1,9 @@
 import random
 import numpy as np
+from src.utilities import rotate
 from src.road_network.vertex import Vertex
-from src.road_network.helpers import rotate
 from src.road_network.segment import Segment
+
 
 # INPUT:    ConfigLoader, Segment, Float
 # OUTPUT:   List
@@ -23,7 +24,7 @@ def grid(config, segment, population_density):
         straight_segment_array += segment.end_vert.position
         
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(straight_segment_array))
-        new_segment.is_seed = True
+        new_segment.is_seed = False
         suggested_segments.append(new_segment)
 
     # We multiply the probability with the population density twice because we

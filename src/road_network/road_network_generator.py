@@ -9,8 +9,10 @@ from scipy.spatial import cKDTree
 from src.road_network.vertex import Vertex
 from src.road_network.segment import Segment
 from src.road_network.growth_rules.grid import grid
+from src.road_network.growth_rules.radial import radial
 from src.road_network.growth_rules.organic import organic
-from src.road_network.helpers import compute_intersection
+from src.utilities import compute_intersection
+import math
 
 
 class Rules(Enum):
@@ -56,18 +58,15 @@ def generate_road_network(config):
 # OUTPUT:   List
 # Generates suggested segments based on the road rule at the end position of the input segment
 def generate_suggested_segments(config, segment, rule_image_array, population_image_array):
-    roadmap_rule = get_roadmap_rule(segment, rule_image_array)
+    roadmap_rule = get_roadmap_rule(config, segment, rule_image_array)
     population_density = get_population_density_values(segment, normalise_pixel_values(population_image_array))
 
     if roadmap_rule == Rules.RULE_GRID:
         suggested_segments = grid(config, segment, population_density)
     elif roadmap_rule == Rules.RULE_ORGANIC:
         suggested_segments = organic(config, segment, population_density)
-        pass
-        # :)
     elif roadmap_rule == Rules.RULE_RADIAL:
-        pass
-        # :(
+        suggested_segments = radial(config, segment, population_density)
     elif roadmap_rule == Rules.RULE_SEED:
         pass
         # hehe
@@ -77,31 +76,24 @@ def generate_suggested_segments(config, segment, rule_image_array, population_im
     return suggested_segments
     
 
-#TODO:
-# This assumes that the population density image has been converted to 
-# black and white, and then all values for whiteness have been computed
-# and normalised in the matrix. Thus, we only need to find the matching
-# x,y for the vertex we are looking at.
-def get_roadmap_rule(segment, image_array):
+def get_roadmap_rule(config, segment, image_array):
 
-    return Rules.RULE_ORGANIC
-
-    #if segment.is_seed:
-    #    return Rules.RULE_SEED
-
-    #if segment.is_major_road:[0]
-        # If we are dealing with a major road, we need to determine whether
-        # we need to apply a radial, organic, or grid-based parttern.
-        #TODO: Add support for other rules
-     #   color = image_array[segment.end.x][segment.end.y]
-     #   if color == (r,b,g,a):
-     #       return Rules.RULE_GRID
-     #   elif color == (r,b,g,a):
-     #       return Rules.RULE_ORGANIC
-     #   elif color == (r,b,g,a):
-     #       return Rules.RULE_RADIAL
-    #else:
-     #   return Rules.RULE_MINOR
+    if segment.is_seed:
+        return Rules.RULE_SEED
+    elif segment.is_minor_road:
+        return Rules.RULE_MINOR
+    else:
+        # If we are dealing with a major road, we need to determine whether we
+        # need to apply a radial, organic, or grid-based parttern.
+        y = int(round(segment.end_vert.position[1]))
+        x = int(round(segment.end_vert.position[0]))
+        color = image_array[y,x]
+        if np.array_equal(color, config.grid_legend):
+            return Rules.RULE_GRID
+        elif np.array_equal(color, config.organic_legend):
+            return Rules.RULE_ORGANIC
+        elif np.array_equal(color, config.radial_legend):
+            return Rules.RULE_RADIAL
     
 
 # INPUT:    ConfigLoader, Segment, List, Set
@@ -149,7 +141,7 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
         # If the second element of result_indexes is not equal the length
         # of the vertex_added_list, a nearby vertex has been found
         if result_indexes[1] != len(vertex_added_list):
-            result_index = result_indexes[1]
+            close_vertex = vertex_added_list[result_indexes[1]]
             vertex_is_close = True
         
         # TODO: check distance to avoid computing every intersection
@@ -179,7 +171,6 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
         # an existing vertex, we snap the end position of the segment to the
         # existing vertex.
         elif vertex_is_close and not intersecting_segment:
-            close_vertex = vertex_added_list[result_index]
             new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
             verified_segments.append(new_segment)
 
@@ -187,8 +178,6 @@ def verify_segments(config, suggested_segments, segment_added_list, vertex_added
         # existing vertex, we consider two different cases: Where the vertex is
         # part of the intersecting segment and not.
         elif vertex_is_close and intersecting_segment:
-            close_vertex = vertex_added_list[result_index]
-            
             # If the existing vertex is part of the intersecting segment, we
             # snap the end position of the segment to the intersecting segment.
             if (close_vertex is intersecting_segment.start_vert or 

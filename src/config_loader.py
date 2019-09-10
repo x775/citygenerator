@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 from src.utilities import parse_image
+from src.utilities import find_legend_centers
 from src.road_network.segment import Segment
 
 class ConfigLoader:
@@ -27,3 +28,4 @@ class ConfigLoader:
         path = os.getcwd() + "/input/images/"
         self.road_rules_array = parse_image(path + self.rule_image_name)
         self.population_density_array = parse_image(path + self.population_density_image_name)
+        self.radial_centers = find_legend_centers(self.road_rules_array, self.radial_legend)

@@ -12,7 +12,7 @@ class Segment:
         else:
             raise ValueError("segment start and end or segment array must be supplied!")
         self.is_seed = False
-        self.is_major_road = False
+        self.is_minor_road = False
     
     @classmethod
     def from_verts(cls, start_vert, end_vert):

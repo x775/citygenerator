@@ -2,8 +2,7 @@
     "axiom": {
         "description": "Default starting segments.",
         "value": [
-            [[500,500],[500,505]],
-            [[505,510],[510,510]]
+            [[510,510],[510,511]]
         ]
     },
     "rule_image_name": {
@@ -16,11 +15,11 @@
     },
     "max_road_network_iterations": {
         "description": "maximum iterations allowed for generating road segments",
-        "value": 500
+        "value": 200
     },
     "near_vertex_max_distance": {
         "description": "maximum allowed distance between road vertices",
-        "value": 1
+        "value": 0.6
     },
     "grid_straight_road_probability": {
         "description": "probability (0-1) of a road going straight being generated for the grid pattern",
@@ -32,11 +31,11 @@
     },
     "grid_road_min_length": {
         "description": "minimum length of a road segment for the grid pattern",
-        "value": 5
+        "value": 1
     },
     "grid_road_max_length": {
         "description": "maximum length of a road segment for the grid pattern",
-        "value": 5
+        "value": 1
     },
     "organic_straight_road_probability": {
         "description": "probability (0-1) of a road going straight being generated for the organic pattern",
@@ -48,10 +47,38 @@
     },
     "organic_road_min_length": {
         "description": "minimum length of a road segment for the organic pattern",
-        "value": 3
+        "value": 0.8
     },
     "organic_road_max_length": {
         "description": "maximum length of a road segment for the organic pattern",
-        "value": 7
+        "value": 1.6
+    },
+    "radial_straight_road_probability": {
+        "description": "probability (0-1) of a road going straight being generated for the radial pattern",
+        "value": 1
+    },
+    "radial_road_turn_probability": {
+        "description": "probability that a turn will be generated for the radial pattern",
+        "value": 0.2
+    },
+    "radial_road_min_length": {
+        "description": "minimum length of a road segment for the radial pattern",
+        "value": 0.8
+    },
+    "radial_road_max_length": {
+        "description": "maximum length of a road segment for the radial pattern",
+        "value": 1.6
+    },
+    "grid_legend": {
+        "description": "color used to represent the grid rule",
+        "value": [255, 100, 100, 255]
+    },
+    "organic_legend": {
+        "description": "color used to represent the organic rule",
+        "value": [100, 255, 100, 255]
+    },
+    "radial_legend": {
+        "description": "color used to represent the radial rule",
+        "value": [100, 100, 255, 255]
     }
 }
