@@ -144,6 +144,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # the closest vertex will always be the queried vertex itself.
     _, result_index = vertex_tree.query(segment.end_vert.position, k=1, distance_upper_bound=max_distance)
     vertex_is_close = False
+    avoid_duplicate = False
     closest_value = np.inf
     intersecting_segment = None
 
@@ -153,16 +154,15 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
         close_vertex = vertex_added_list[result_index]
 
         if close_vertex is not segment.start_vert:
-
             # if the close vertex belongs to a segment which shares
             # a vertex with the current segment, the current segment
-            # is not considered further
+            # should not snap to the vertex
             close_vertex_segments = vertex_added_dict.get(close_vertex)
             segments_same_start = [seg for seg in close_vertex_segments
-                                   if segment.start_vert is seg.start_vert or segment.start_vert is seg.end_vert]
+                                if segment.start_vert is seg.start_vert or segment.start_vert is seg.end_vert]
             if segments_same_start:
-                return None
-            
+                avoid_duplicate = True
+
             vertex_is_close = True
     
     # We find the maximum allowed segment length and query our tree to find any
@@ -187,11 +187,12 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
 
             # We check whether the new segment intersects an existing segment.
             # If the relative point of intersection is between 0.00001 and
-            # 0.99999, an intersection is detected. We check whether the the
-            # relative point of intersection is a bit further beyond the
-            # intersection in order to extend it if is close to an existing
-            # segment. If multiple intersections are detected, use the
-            # intersection closest to the start position of the new segment.
+            # 0.99999 for the existing segment, an intersection is detected. We
+            # check whether the relative point of intersection is a bit further
+            # beyond the intersection for the new segment in order to extend it
+            # if is close to an existing segment. If multiple intersections are
+            # detected, use the intersection closest to the start position of
+            # the new segment.
             if(intersection[0] > 0.00001 and 
                 intersection[0] < 1.49999 and 
                 intersection[1] > 0.00001 and 
@@ -211,19 +212,25 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # an existing vertex, we snap the end position of the segment to the
     # existing vertex.
     elif vertex_is_close and not intersecting_segment:
-        new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
-        return new_segment
+        if not avoid_duplicate:
+            new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
+            return new_segment
+        else:
+            return None
 
     # If the segment intersects an existing segment and is also close to an
     # existing vertex, we consider two different cases: Where the vertex is
     # part of the intersecting segment and not.
     elif vertex_is_close and intersecting_segment:
         # If the existing vertex is part of the intersecting segment, we
-        # snap the end position of the segment to the intersecting segment.
+        # snap the end position of the new segment to the vertex.
         if (close_vertex is intersecting_segment.start_vert or 
             close_vertex is intersecting_segment.end_vert):
-            new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
-            return new_segment
+            if not avoid_duplicate:
+                new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
+                return new_segment
+            else:
+                return None
         # If the existing vertex is not part of the intersecting segment, we
         # create a new intersection (and thus vertex) and split the existing
         # segment into two parts.
