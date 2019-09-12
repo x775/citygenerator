@@ -15,7 +15,7 @@
     },
     "max_road_network_iterations": {
         "description": "maximum iterations allowed for generating road segments",
-        "value": 200
+        "value": 150
     },
     "near_vertex_max_distance": {
         "description": "maximum allowed distance between road vertices",

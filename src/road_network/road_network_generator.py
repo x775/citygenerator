@@ -51,7 +51,7 @@ def generate_road_network(config):
                     if vert in vertex_added_dict:
                         vertex_added_dict[vert].append(verified_segment)
                     else:
-                        vertex_added_dict[vert] = []
+                        vertex_added_dict[vert] = [verified_segment]
 
             # vertex_added_set.update([segment.start_vert, segment.end_vert])
 
@@ -112,13 +112,12 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     max_x = config.road_rules_array.shape[1] # maximum x coordinate
     max_y = config.road_rules_array.shape[0] # maximum y coordinate
     max_distance = config.near_vertex_max_distance # maximum allowed distance between road vertices
-    # vertex_added_list = list(vertex_added_set) # list of unique vertex positions
-    vertex_added_list = list(vertex_added_dict.keys())
+    vertex_added_list = list(vertex_added_dict.keys()) # list of unique vertex positions
     # KDTree of unique vertices used to compute nearest neighbours
     vertex_tree = cKDTree([vertex.position for vertex in vertex_added_list])
 
     # INPUT:    Segment, Segment  
-    # OUTPUT:   -
+    # OUTPUT:   Segment
     # Creates a new intersection using the two segments. The existing segment is
     # split into two parts and its reference updated in the segment_added_list.
     def _create_intersection(new_segment, intersecting_segment, intersection_value):
@@ -127,6 +126,11 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
         new_segment = Segment(segment_start=new_segment.start_vert, segment_end=abs_intersection)
         old_segment_split = Segment(segment_start=new_segment.end_vert, segment_end=intersecting_segment.end_vert)
         intersecting_segment.end_vert = new_segment.end_vert
+
+        # We update the dictionary with vertices and their segments to match the new intersection
+        vertex_added_dict[abs_intersection] = [intersecting_segment, old_segment_split]
+        vertex_added_dict[old_segment_split.end_vert].remove(intersecting_segment)
+        vertex_added_dict[old_segment_split.end_vert].append(old_segment_split)
 
         segment_added_list.append(old_segment_split)
         return new_segment
@@ -138,44 +142,65 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # We query the KDTree to find the closest vertex to the end position of
     # the new segment. We use k=2 to find the two closest neighbours because
     # the closest vertex will always be the queried vertex itself.
-    _, result_indexes = vertex_tree.query(segment.end_vert.position, k=2, distance_upper_bound=max_distance)
+    _, result_index = vertex_tree.query(segment.end_vert.position, k=1, distance_upper_bound=max_distance)
     vertex_is_close = False
     closest_value = np.inf
     intersecting_segment = None
 
-    # If the second element of result_indexes is not equal the length
+    # If the second element of result_index is not equal the length
     # of the vertex_added_list, a nearby vertex has been found
-    if result_indexes[1] != len(vertex_added_list):
-        close_vertex = vertex_added_list[result_indexes[1]]
+    if result_index != len(vertex_added_list):
+        close_vertex = vertex_added_list[result_index]
 
-        # if the close vertex belongs to a segment which shares
-        # a vertex with the current segment, the current segment
-        # is not considered further
-        close_vertex_segments = vertex_added_dict.get(close_vertex)
-        segments_same_start = [seg for seg in close_vertex_segments
-                               if segment.start_vert is seg.start_vert or segment.start_vert is seg.end_vert]
-        if segments_same_start:
-            return None
-        
-        vertex_is_close = True
-        
-    # TODO: check distance to avoid computing every intersection
-    for old_segment in segment_added_list:
-        intersection = compute_intersection(segment, old_segment)
+        if close_vertex is not segment.start_vert:
 
-        # We check whether the new segment intersects an existing segment.
-        # If the relative point of intersection is between 0.00001 and
-        # 0.99999, an intersection is detected. If multiple intersections
-        # are detected, use the intersection closest to the start position
-        # of the new segment.
-        if(intersection[0] > 0.00001 and 
-           intersection[0] < 0.99999 and 
-           intersection[1] > 0.00001 and 
-           intersection[1] < 0.99999 and 
-           intersection[0] < closest_value):
-            intersecting_segment = old_segment 
-            closest_value = intersection[0]
-        
+            # if the close vertex belongs to a segment which shares
+            # a vertex with the current segment, the current segment
+            # is not considered further
+            close_vertex_segments = vertex_added_dict.get(close_vertex)
+            segments_same_start = [seg for seg in close_vertex_segments
+                                   if segment.start_vert is seg.start_vert or segment.start_vert is seg.end_vert]
+            if segments_same_start:
+                return None
+            
+            vertex_is_close = True
+    
+    # We find the maximum allowed segment length and query our tree to find any
+    # vertices within this distance. This way, we reduce the number of segments
+    # to check in the subsequent steps; assuming the query returns more than one
+    # result. If only one result is returned, it is the segment.end_vert.
+    max_segment_length = max(config.grid_road_max_length, config.organic_road_max_length, config.radial_road_max_length)
+    _, vertices_indexes = vertex_tree.query(segment.end_vert.position, k=100, distance_upper_bound=max_segment_length+1)
+    vertices_indexes = [index for index in vertices_indexes if index != len(vertex_added_list)]
+    if vertices_indexes:
+        matched_vertices = [vertex_added_list[index] for index in vertices_indexes
+                            if vertex_added_list[index] is not segment.end_vert and vertex_added_list[index] is not segment.start_vert]
+                                    
+        # We find all segments which the matched vertices are part of.
+        matched_segments = set()
+        for vertex in matched_vertices:
+            matched_segments.update(vertex_added_dict[vertex])
+
+        # We compute intersections for all matched segments.
+        for old_segment in matched_segments:
+            intersection = compute_intersection(segment, old_segment)
+
+            # We check whether the new segment intersects an existing segment.
+            # If the relative point of intersection is between 0.00001 and
+            # 0.99999, an intersection is detected. We check whether the the
+            # relative point of intersection is a bit further beyond the
+            # intersection in order to extend it if is close to an existing
+            # segment. If multiple intersections are detected, use the
+            # intersection closest to the start position of the new segment.
+            if(intersection[0] > 0.00001 and 
+                intersection[0] < 1.49999 and 
+                intersection[1] > 0.00001 and 
+                intersection[1] < 0.99999 and 
+                intersection[0] < closest_value):
+                intersecting_segment = old_segment 
+                closest_value = intersection[0]
+    
+
     # If the segment intersects an existing segment, and an existing vertex
     # is not nearby, we create a new intersection (and thus vertex) and
     # split the existing segment into two parts.

@@ -18,7 +18,7 @@ def generate(config_path):
 
 
 if __name__ == "__main__":
-    random.seed(42)
+    random.seed(41)
     t = time.process_time()
     road_network = generate(os.getcwd() + "/input/configs/test.json")
     segments_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network]
@@ -28,9 +28,10 @@ if __name__ == "__main__":
     ax = fig.add_subplot(1, 1, 1)
     ax.add_collection(lines)
     ax.autoscale()
+    print(time.process_time() - t)
     plt.show()
 
-    print(time.process_time() - t)
+    
 
 # step 2: railroad network
 # step 3: parcels
