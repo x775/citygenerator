@@ -12,7 +12,8 @@ from src.road_network.growth_rules.grid import grid
 from src.road_network.growth_rules.radial import radial
 from src.road_network.growth_rules.organic import organic
 from src.utilities import compute_intersection
-import math
+from src.utilities import normalise_pixel_values
+from src.utilities import get_population_density_values
 
 
 class Rules(Enum):
@@ -22,7 +23,9 @@ class Rules(Enum):
     RULE_GRID = 4
     RULE_MINOR = 5
 
-
+# INPUT:    ConfigLoader
+# OUTPUT:   List
+# Generates a road network given a loaded config.
 def generate_road_network(config):
     segment_added_list = []
     vertex_added_dict = {}
@@ -33,7 +36,6 @@ def generate_road_network(config):
         segment_front_queue.put(segment)
         vertex_added_dict[segment.start_vert] = [segment]
         vertex_added_dict[segment.end_vert] = [segment]
-        # vertex_added_set.update([segment.start_vert, segment.end_vert])
 
     # Iterate through the front queue, incrementally building the road network.
     iteration = 0
@@ -43,17 +45,17 @@ def generate_road_network(config):
         suggested_segments = generate_suggested_segments(config, current_segment, config.road_rules_array, config.population_density_array)
         
         for segment in suggested_segments:
-            verified_segment = verify_segment(config, segment, segment_added_list, vertex_added_dict)
-            if verified_segment:
-                segment_front_queue.put(verified_segment)
-                segment_added_list.append(verified_segment)
-                for vert in [verified_segment.start_vert, verified_segment.end_vert]:
-                    if vert in vertex_added_dict:
-                        vertex_added_dict[vert].append(verified_segment)
-                    else:
-                        vertex_added_dict[vert] = [verified_segment]
+            if not len(vertex_added_dict[current_segment.end_vert]) >= 4:   
+                verified_segment = verify_segment(config, segment, segment_added_list, vertex_added_dict)
+                if verified_segment:
+                    segment_front_queue.put(verified_segment)
+                    segment_added_list.append(verified_segment)
+                    for vert in [verified_segment.start_vert, verified_segment.end_vert]:
+                        if vert in vertex_added_dict:
+                            vertex_added_dict[vert].append(verified_segment)
+                        else:
+                            vertex_added_dict[vert] = [verified_segment]
 
-            # vertex_added_set.update([segment.start_vert, segment.end_vert])
 
         iteration += 1
 
@@ -112,6 +114,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     max_x = config.road_rules_array.shape[1] # maximum x coordinate
     max_y = config.road_rules_array.shape[0] # maximum y coordinate
     max_distance = config.near_vertex_max_distance # maximum allowed distance between road vertices
+    max_roads_intersection = 4 # maximum allowed roads in an intersection
     vertex_added_list = list(vertex_added_dict.keys()) # list of unique vertex positions
     # KDTree of unique vertices used to compute nearest neighbours
     vertex_tree = cKDTree([vertex.position for vertex in vertex_added_list])
@@ -144,7 +147,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # the closest vertex will always be the queried vertex itself.
     _, result_index = vertex_tree.query(segment.end_vert.position, k=1, distance_upper_bound=max_distance)
     vertex_is_close = False
-    avoid_duplicate = False
+    duplicate = False
     closest_value = np.inf
     intersecting_segment = None
 
@@ -161,7 +164,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
             segments_same_start = [seg for seg in close_vertex_segments
                                 if segment.start_vert is seg.start_vert or segment.start_vert is seg.end_vert]
             if segments_same_start:
-                avoid_duplicate = True
+                duplicate = True
 
             vertex_is_close = True
     
@@ -189,19 +192,18 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
             # If the relative point of intersection is between 0.00001 and
             # 0.99999 for the existing segment, an intersection is detected. We
             # check whether the relative point of intersection is a bit further
-            # beyond the intersection for the new segment in order to extend it
-            # if is close to an existing segment. If multiple intersections are
+            # beyond the length of the new segment in order to extend it if is
+            # close to an existing segment. If multiple intersections are
             # detected, use the intersection closest to the start position of
             # the new segment.
             if(intersection[0] > 0.00001 and 
-                intersection[0] < 1.49999 and 
-                intersection[1] > 0.00001 and 
-                intersection[1] < 0.99999 and 
-                intersection[0] < closest_value):
+               intersection[0] < 1.49999 and 
+               intersection[1] > 0.00001 and 
+               intersection[1] < 0.99999 and 
+               intersection[0] < closest_value):
                 intersecting_segment = old_segment 
                 closest_value = intersection[0]
     
-
     # If the segment intersects an existing segment, and an existing vertex
     # is not nearby, we create a new intersection (and thus vertex) and
     # split the existing segment into two parts.
@@ -212,7 +214,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # an existing vertex, we snap the end position of the segment to the
     # existing vertex.
     elif vertex_is_close and not intersecting_segment:
-        if not avoid_duplicate:
+        if not duplicate and len(vertex_added_dict[close_vertex]) < max_roads_intersection:
             new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
             return new_segment
         else:
@@ -226,7 +228,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
         # snap the end position of the new segment to the vertex.
         if (close_vertex is intersecting_segment.start_vert or 
             close_vertex is intersecting_segment.end_vert):
-            if not avoid_duplicate:
+            if not duplicate and len(vertex_added_dict[close_vertex]) < max_roads_intersection:
                 new_segment = Segment(segment_start=segment.start_vert, segment_end=close_vertex)
                 return new_segment
             else:
@@ -240,12 +242,3 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # bounds, we return it without alterations.
     else:
         return segment
-
-
-def get_population_density_values(segment, population_image_array):
-    return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
-
-
-# normalise pixel values to single value in range [0,1]
-def normalise_pixel_values(image_array):
-    return image_array[:,:,0] / 255

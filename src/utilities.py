@@ -4,21 +4,25 @@ import skimage.morphology
 
 # INPUT:    String
 # OUTPUT:   numpy.Array
+# We open the supplied image and convert it to a numpy array.
+# dtype is inferred as uint8, and the output is an array of
+# lists where each parent list corresponds to a row of pixel
+# values. All pixels contain [r, g, b]-values.
 def parse_image(filename):
-    # We open the supplied image and convert it to a numpy array.
-    # dtype is inferred as uint8, and the output is an array of
-    # lists where each parent list corresponds to a row of pixel
-    # values. All pixels contain [r, g, b, a]-values.
-    return np.asarray(Image.open(filename))
+    image_array = np.asarray(Image.open(filename))
+    # Remove alpha value if image only contains a single color.
+    if image_array.shape[2] == 4:
+        image_array = np.delete(image_array, 3, 2)
+    return image_array
 
 
 # INPUT:    numpy.Array, numpy.Array
 # OUTPUT:   numpy.Array
+# Given an array of colour values, and a specific legend color,
+# we create and subsequently zip a 2-tuple of arrays containing 
+# indices in the first and second dimension corresponding to the 
+# pixel values of the colour matching the legend.
 def find_legend_color_coordinates(image_arr, legend_color):
-    # Given an array of colour values, and a specific legend color,
-    # we create and subsequently zip a 2-tuple of arrays containing 
-    # indices in the first and second dimension corresponding to the 
-    # pixel values of the colour matching the legend.
     indices = np.where(np.all(image_arr == legend_color, axis=-1))
     # Convert iterator to list to array before returning.
     return np.array(list(zip(indices[0], indices[1]))) 
@@ -91,3 +95,18 @@ def compute_intersection(segment_one, segment_two):
         return np.linalg.solve(np.array([segment_one_sub, -segment_two_sub]).T, segment_two_start - segment_one_start)
     except np.linalg.linalg.LinAlgError:
         return np.array([np.inf, np.inf])
+
+
+# INPUT: Segment, np.Array
+# OUTPUT: int
+# Get the population density value for a specific pixel of
+# the population density image
+def get_population_density_values(segment, population_image_array):
+    return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
+
+
+# INPUT: np.Array
+# OUTPUT: np.Array
+# normalise pixel values to single value in range [0,1]
+def normalise_pixel_values(image_array):
+    return image_array[:,:,0] / 255
