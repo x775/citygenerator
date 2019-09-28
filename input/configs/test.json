@@ -17,8 +17,8 @@
         "description": "Maximum iterations allowed for generating road segments.",
         "value": 200
     },
-    "near_vertex_max_distance": {
-        "description": "Maximum allowed distance between road vertices.",
+    "major_vertex_min_distance": {
+        "description": "Minimum allowed distance between major road vertices.",
         "value": 0.6
     },
     "grid_straight_road_probability": {
@@ -80,5 +80,21 @@
     "radial_legend": {
         "description": "Color used to represent the radial rule.",
         "value": [100, 100, 255]
+    },
+    "minor_road_min_length": {
+        "description": "Minimum length of a minor road seed road.",
+        "value": 0.5
+    },
+    "minor_road_max_length": {
+        "description": "Maximum length of a minor road seed road.",
+        "value": 0.5
+    },
+    "minor_road_seed_probability": {
+        "description": "Probability [0-1] of a minor road seed road being generated.",
+        "value": 0.2
+    },
+    "minor_vertex_min_distance": {
+        "description": "Minimum allowed distance between minor road vertices.",
+        "value": 0.2
     }
 }

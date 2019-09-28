@@ -11,6 +11,7 @@ from src.road_network.segment import Segment
 from src.road_network.growth_rules.grid import grid
 from src.road_network.growth_rules.radial import radial
 from src.road_network.growth_rules.organic import organic
+from src.road_network.growth_rules.minor_road_seed import minor_road_seed
 from src.utilities import compute_intersection
 from src.utilities import normalise_pixel_values
 from src.utilities import get_population_density_values
@@ -39,14 +40,14 @@ def generate_road_network(config):
 
     # Iterate through the front queue, incrementally building the road network.
     iteration = 0
+    min_distance = config.major_vertex_min_distance # Min distance between major road vertices.
     while not segment_front_queue.empty() and iteration < config.max_road_network_iterations:
         current_segment = segment_front_queue.get()
 
         suggested_segments = generate_suggested_segments(config, current_segment, config.road_rules_array, config.population_density_array)
-        
         for segment in suggested_segments:
             if not len(vertex_added_dict[current_segment.end_vert]) >= 4:   
-                verified_segment = verify_segment(config, segment, segment_added_list, vertex_added_dict)
+                verified_segment = verify_segment(config, segment, min_distance, segment_added_list, vertex_added_dict)
                 if verified_segment:
                     segment_front_queue.put(verified_segment)
                     segment_added_list.append(verified_segment)
@@ -56,12 +57,38 @@ def generate_road_network(config):
                         else:
                             vertex_added_dict[vert] = [verified_segment]
 
-
         iteration += 1
 
-        # check if segment is seed, if so, readd
+    generate_minor_roads(config, segment_added_list, vertex_added_dict)
 
     return segment_added_list
+
+
+# INPUT:    ConfigLoader, List, Dictionary
+# OUTPUT:   -
+# generate minor roads based on minor road seeds
+def generate_minor_roads(config, segment_added_list, vertex_added_dict):
+    # Extract all segments which are not part of an intersection,
+    # i.e. segments with end vertices that have less than three segments connected to them.
+    minor_road_seed_candidates = [segment for segment in segment_added_list if len(vertex_added_dict[segment.end_vert]) < 3]
+    minor_roads_queue = Queue(maxsize=0)
+
+    min_distance = config.minor_vertex_min_distance # Min distance between minor road vertices.
+    for seed in minor_road_seed_candidates:
+        population_density = get_population_density_values(seed, normalise_pixel_values(config.population_density_array))
+        suggested_seeds = minor_road_seed(config, seed, population_density)
+
+        for suggested_seed in suggested_seeds:
+            verified_seed = verify_segment(config, suggested_seed, min_distance, segment_added_list, vertex_added_dict)
+            if verified_seed:
+                minor_roads_queue.put(verified_seed)
+                segment_added_list.append(verified_seed)
+                for vert in [verified_seed.start_vert, verified_seed.end_vert]:
+                    if vert in vertex_added_dict:
+                        vertex_added_dict[vert].append(verified_seed)
+                    else:
+                        vertex_added_dict[vert] = [verified_seed]
+
         
 
 # INPUT:    ConfigLoader, Segment, numpy.Array, numpy.Array
@@ -77,43 +104,37 @@ def generate_suggested_segments(config, segment, rule_image_array, population_im
         suggested_segments = organic(config, segment, population_density)
     elif roadmap_rule == Rules.RULE_RADIAL:
         suggested_segments = radial(config, segment, population_density)
-    elif roadmap_rule == Rules.RULE_SEED:
-        pass
-        # hehe
-    else: #Rules.RULE_MINOR
-        pass
 
     return suggested_segments
     
-
+    
+# INPUT:    ConfigLoader, Segment, numpy.Array
+# OUTPUT:   Enum
+# Determine which roadmap rule should be used at current placement
 def get_roadmap_rule(config, segment, image_array):
-
-    if segment.is_seed:
-        return Rules.RULE_SEED
-    elif segment.is_minor_road:
-        return Rules.RULE_MINOR
+    # If we are dealing with a major road, we need to determine whether we
+    # need to apply a radial, organic, or grid-based parttern.
+    y = int(round(segment.end_vert.position[1]))
+    x = int(round(segment.end_vert.position[0]))
+    color = image_array[y,x]
+    if np.array_equal(color, config.grid_legend):
+        return Rules.RULE_GRID
+    elif np.array_equal(color, config.organic_legend):
+        return Rules.RULE_ORGANIC
+    elif np.array_equal(color, config.radial_legend):
+        return Rules.RULE_RADIAL
     else:
-        # If we are dealing with a major road, we need to determine whether we
-        # need to apply a radial, organic, or grid-based parttern.
-        y = int(round(segment.end_vert.position[1]))
-        x = int(round(segment.end_vert.position[0]))
-        color = image_array[y,x]
-        if np.array_equal(color, config.grid_legend):
-            return Rules.RULE_GRID
-        elif np.array_equal(color, config.organic_legend):
-            return Rules.RULE_ORGANIC
-        elif np.array_equal(color, config.radial_legend):
-            return Rules.RULE_RADIAL
+        # Defaults to organic.
+        return Rules.RULE_ORGANIC
     
 
-# INPUT:    ConfigLoader, Segment, List, Set
+# INPUT:    ConfigLoader, Segment, Float, List, Dictionary
 # OUTPUT:   Segment
 # Local constraints are used to verify a suggested segment. Segments are
 # either ignored if they are out of bounds or altered to fit the existing road network
-def verify_segment(config, segment, segment_added_list, vertex_added_dict):
+def verify_segment(config, segment, min_vertex_distance, segment_added_list, vertex_added_dict):
     max_x = config.road_rules_array.shape[1] # maximum x coordinate
     max_y = config.road_rules_array.shape[0] # maximum y coordinate
-    max_distance = config.near_vertex_max_distance # maximum allowed distance between road vertices
     max_roads_intersection = 4 # maximum allowed roads in an intersection
     vertex_added_list = list(vertex_added_dict.keys()) # list of unique vertex positions
     # KDTree of unique vertices used to compute nearest neighbours
@@ -130,7 +151,7 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
         old_segment_split = Segment(segment_start=new_segment.end_vert, segment_end=intersecting_segment.end_vert)
         intersecting_segment.end_vert = new_segment.end_vert
 
-        # We update the dictionary with vertices and their segments to match the new intersection
+        # We update the dictionary with vertices and their segments to match the new intersection.
         vertex_added_dict[abs_intersection] = [intersecting_segment, old_segment_split]
         vertex_added_dict[old_segment_split.end_vert].remove(intersecting_segment)
         vertex_added_dict[old_segment_split.end_vert].append(old_segment_split)
@@ -141,11 +162,13 @@ def verify_segment(config, segment, segment_added_list, vertex_added_dict):
     # We do not consider the segment further if it breaks the boundaries.
     if segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y:
         return None 
-        
+
+    # TODO: Check that we do not end up in water
+
     # We query the KDTree to find the closest vertex to the end position of
     # the new segment. We use k=2 to find the two closest neighbours because
     # the closest vertex will always be the queried vertex itself.
-    _, result_index = vertex_tree.query(segment.end_vert.position, k=1, distance_upper_bound=max_distance)
+    _, result_index = vertex_tree.query(segment.end_vert.position, k=1, distance_upper_bound=min_vertex_distance)
     vertex_is_close = False
     duplicate = False
     closest_value = np.inf

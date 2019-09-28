@@ -11,7 +11,6 @@ class Segment:
             self.end_vert = Vertex(segment_array[1])
         else:
             raise ValueError("segment start and end or segment array must be supplied!")
-        self.is_seed = False
         self.is_minor_road = False
     
     @classmethod

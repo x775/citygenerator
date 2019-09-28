@@ -24,7 +24,6 @@ def organic(config, segment, population_density):
         straight_segment_array += segment.end_vert.position
 
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(straight_segment_array))
-        new_segment.is_seed = False
         suggested_segments.append(new_segment)
 
     # We multiply the probability with the population density because we want to
@@ -38,7 +37,6 @@ def organic(config, segment, population_density):
         turn_road_segment_array += segment.end_vert.position
 
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(turn_road_segment_array))
-        new_segment.is_seed = False
         suggested_segments.append(new_segment)
     
     # Generate new segment turning left.
@@ -48,7 +46,6 @@ def organic(config, segment, population_density):
         turn_road_segment_array += segment.end_vert.position
         
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(turn_road_segment_array))
-        new_segment.is_seed = False
         suggested_segments.append(new_segment)
     
     return suggested_segments

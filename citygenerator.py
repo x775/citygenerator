@@ -21,12 +21,17 @@ if __name__ == "__main__":
     random.seed(41)
     t = time.process_time()
     road_network = generate(os.getcwd() + "/input/configs/test.json")
-    segments_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network]
-    lines = LineCollection(segments_coords)
+    major_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
+                            if not segment.is_minor_road]
+    minor_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
+                            if segment.is_minor_road]
+    major_lines = LineCollection(major_segment_coords)
+    minor_lines = LineCollection(minor_segment_coords, colors=[[0, 0, 0, 0.8]])
     fig = plt.figure()
 
     ax = fig.add_subplot(1, 1, 1)
-    ax.add_collection(lines)
+    ax.add_collection(major_lines)
+    ax.add_collection(minor_lines)
     ax.autoscale()
     print(time.process_time() - t)
     plt.show()
