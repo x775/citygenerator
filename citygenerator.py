@@ -26,7 +26,7 @@ if __name__ == "__main__":
     minor_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
                             if segment.is_minor_road]
     major_lines = LineCollection(major_segment_coords)
-    minor_lines = LineCollection(minor_segment_coords, colors=[[0, 0, 0, 0.8]])
+    minor_lines = LineCollection(minor_segment_coords, linewidths=[0.6], colors=[[0, 0, 0, 0.8]])
     fig = plt.figure()
 
     ax = fig.add_subplot(1, 1, 1)

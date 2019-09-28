@@ -10,8 +10,12 @@ from src.road_network.segment import Segment
 def grid(config, segment, population_density):
     road_straight_probability = config.grid_straight_road_probability
     road_turn_probability = config.grid_road_turn_probability
-    road_mininum_length = config.grid_road_min_length
-    road_maximum_length = config.grid_road_max_length
+    if segment.is_minor_road:
+        road_mininum_length = config.minor_road_min_length
+        road_maximum_length = config.minor_road_max_length
+    else:
+        road_mininum_length = config.grid_road_min_length
+        road_maximum_length = config.grid_road_max_length
 
     suggested_segments = []
 

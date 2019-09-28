@@ -11,6 +11,7 @@ from src.road_network.segment import Segment
 from src.road_network.growth_rules.grid import grid
 from src.road_network.growth_rules.radial import radial
 from src.road_network.growth_rules.organic import organic
+from src.road_network.growth_rules.minor_road import minor_road
 from src.road_network.growth_rules.minor_road_seed import minor_road_seed
 from src.utilities import compute_intersection
 from src.utilities import normalise_pixel_values
@@ -88,7 +89,27 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
                         vertex_added_dict[vert].append(verified_seed)
                     else:
                         vertex_added_dict[vert] = [verified_seed]
+    
+    iteration = 0
+    while not minor_roads_queue.empty() and iteration < config.max_road_network_iterations+2000:
+        current_segment = minor_roads_queue.get()
 
+        suggested_segments = minor_road(config, current_segment)
+        for segment in suggested_segments:
+            if not len(vertex_added_dict[current_segment.end_vert]) >= 4:   
+                verified_segment = verify_segment(config, segment, min_distance, segment_added_list, vertex_added_dict)
+                if verified_segment:
+                    verified_segment.is_minor_road = True
+                    minor_roads_queue.put(verified_segment)
+                    segment_added_list.append(verified_segment)
+                    for vert in [verified_segment.start_vert, verified_segment.end_vert]:
+                        if vert in vertex_added_dict:
+                            vertex_added_dict[vert].append(verified_segment)
+                        else:
+                            vertex_added_dict[vert] = [verified_segment]
+
+        iteration += 1
+        
         
 
 # INPUT:    ConfigLoader, Segment, numpy.Array, numpy.Array
@@ -149,6 +170,7 @@ def verify_segment(config, segment, min_vertex_distance, segment_added_list, ver
         abs_intersection = Vertex(intersection_value * segment_vector + segment.start_vert.position)
         new_segment = Segment(segment_start=new_segment.start_vert, segment_end=abs_intersection)
         old_segment_split = Segment(segment_start=new_segment.end_vert, segment_end=intersecting_segment.end_vert)
+        old_segment_split.is_minor_road = intersecting_segment.is_minor_road
         intersecting_segment.end_vert = new_segment.end_vert
 
         # We update the dictionary with vertices and their segments to match the new intersection.

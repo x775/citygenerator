@@ -83,7 +83,7 @@
     },
     "minor_road_min_length": {
         "description": "Minimum length of a minor road seed road.",
-        "value": 0.5
+        "value": 0.2
     },
     "minor_road_max_length": {
         "description": "Maximum length of a minor road seed road.",
@@ -91,10 +91,14 @@
     },
     "minor_road_seed_probability": {
         "description": "Probability [0-1] of a minor road seed road being generated.",
-        "value": 0.2
+        "value": 1
     },
     "minor_vertex_min_distance": {
         "description": "Minimum allowed distance between minor road vertices.",
+        "value": 0.2
+    },
+    "minor_road_organic_probability": {
+        "description": "Probability [0-1] of using the organic rule for minor roads.",
         "value": 0.2
     }
 }
