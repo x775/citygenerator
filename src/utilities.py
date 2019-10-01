@@ -10,7 +10,7 @@ import skimage.morphology
 # values. All pixels contain [r, g, b]-values.
 def parse_image(filename):
     image_array = np.asarray(Image.open(filename))
-    # Remove alpha value if image only contains a single color.
+    # Remove alpha value if image only contains a single½    color.
     if image_array.shape[2] == 4:
         image_array = np.delete(image_array, 3, 2)
     return image_array
@@ -22,10 +22,18 @@ def parse_image(filename):
 # we create and subsequently zip a 2-tuple of arrays containing 
 # indices in the first and second dimension corresponding to the 
 # pixel values of the colour matching the legend.
-def find_legend_color_coordinates(image_arr, legend_color):
-    indices = np.where(np.all(image_arr == legend_color, axis=-1))
+def find_legend_color_coordinates(image_array, legend_color):
+    indices = np.where(np.all(image_array == legend_color, axis=-1))
     # Convert iterator to list to array before returning.
     return np.array(list(zip(indices[0], indices[1]))) 
+
+
+# INPUT:    Segment
+# OUTPUT:   numpy.Array (RGB value)
+def find_pixel_value(segment, image_array):
+    y = int(round(segment.end_vert.position[1]))
+    x = int(round(segment.end_vert.position[0]))
+    return image_array[y,x]
 
 
 # INPUT:    numpy.Array

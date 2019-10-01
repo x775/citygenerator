@@ -13,6 +13,7 @@ from src.road_network.growth_rules.radial import radial
 from src.road_network.growth_rules.organic import organic
 from src.road_network.growth_rules.minor_road import minor_road
 from src.road_network.growth_rules.minor_road_seed import minor_road_seed
+from src.utilities import find_pixel_value
 from src.utilities import compute_intersection
 from src.utilities import normalise_pixel_values
 from src.utilities import get_population_density_values
@@ -135,9 +136,7 @@ def generate_suggested_segments(config, segment, rule_image_array, population_im
 def get_roadmap_rule(config, segment, image_array):
     # If we are dealing with a major road, we need to determine whether we
     # need to apply a radial, organic, or grid-based parttern.
-    y = int(round(segment.end_vert.position[1]))
-    x = int(round(segment.end_vert.position[0]))
-    color = image_array[y,x]
+    color = find_pixel_value(segment, image_array)
     if np.array_equal(color, config.grid_legend):
         return Rules.RULE_GRID
     elif np.array_equal(color, config.organic_legend):
@@ -181,11 +180,11 @@ def verify_segment(config, segment, min_vertex_distance, segment_added_list, ver
         segment_added_list.append(old_segment_split)
         return new_segment
         
-    # We do not consider the segment further if it breaks the boundaries.
-    if segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y:
-        return None 
-
-    # TODO: Check that we do not end up in water
+    # We do not consider the segment further if it breaks the boundaries or if it is located in water.
+    if (segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y):
+        return None
+    elif np.array_equal(find_pixel_value(segment, config.water_map_array), config.water_legend):
+        return None
 
     # We query the KDTree to find the closest vertex to the end position of
     # the new segment. We use k=2 to find the two closest neighbours because

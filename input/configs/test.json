@@ -15,11 +15,11 @@
     },
     "max_road_network_iterations": {
         "description": "Maximum iterations allowed for generating road segments.",
-        "value": 20
+        "value": 1000
     },
     "max_minor_road_iterations": {
         "description": "Maximum number of iterations for generating minor roads",
-        "value": 20
+        "value": 1000
     },
     "major_vertex_min_distance": {
         "description": "Minimum allowed distance between major road vertices.",
@@ -104,5 +104,13 @@
     "minor_road_organic_probability": {
         "description": "Probability [0-1] of using the organic rule for minor roads.",
         "value": 0.2
+    },
+    "water_legend": {
+        "description": "Color used to represent water",
+        "value": [255, 255, 255]
+    },
+    "water_map_image_name": {
+        "description": "Name of image used for water",
+        "value": "water_map.png"
     }
 }
