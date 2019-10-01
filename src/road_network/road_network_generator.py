@@ -62,7 +62,7 @@ def generate_road_network(config):
 
     generate_minor_roads(config, segment_added_list, vertex_added_dict)
 
-    return segment_added_list
+    return segment_added_list, vertex_added_dict
 
 
 # INPUT:    ConfigLoader, List, Dictionary
@@ -91,7 +91,7 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
                         vertex_added_dict[vert] = [verified_seed]
     
     iteration = 0
-    while not minor_roads_queue.empty() and iteration < config.max_road_network_iterations+2000:
+    while not minor_roads_queue.empty() and iteration < config.max_minor_road_iterations:
         current_segment = minor_roads_queue.get()
 
         suggested_segments = minor_road(config, current_segment)
