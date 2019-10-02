@@ -75,6 +75,7 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
     minor_road_seed_candidates = [segment for segment in segment_added_list if len(vertex_added_dict[segment.end_vert]) < 3]
     minor_roads_queue = Queue(maxsize=0)
 
+    # Start by generating all seeds from which minor roads may grow. Add them to queue.
     min_distance = config.minor_vertex_min_distance # Min distance between minor road vertices.
     for seed in minor_road_seed_candidates:
         population_density = get_population_density_values(seed, normalise_pixel_values(config.population_density_array))
@@ -92,6 +93,7 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
                         vertex_added_dict[vert] = [verified_seed]
     
     iteration = 0
+    # Iterate through max_minor_road_iterations and construct minor roads from stubs created above.
     while not minor_roads_queue.empty() and iteration < config.max_minor_road_iterations:
         current_segment = minor_roads_queue.get()
 
@@ -153,8 +155,8 @@ def get_roadmap_rule(config, segment, image_array):
 # Local constraints are used to verify a suggested segment. Segments are
 # either ignored if they are out of bounds or altered to fit the existing road network
 def verify_segment(config, segment, min_vertex_distance, segment_added_list, vertex_added_dict):
-    max_x = config.road_rules_array.shape[1] # maximum x coordinate
-    max_y = config.road_rules_array.shape[0] # maximum y coordinate
+    max_x = config.road_rules_array.shape[1] - 1 # maximum x coordinate
+    max_y = config.road_rules_array.shape[0] - 1 # maximum y coordinate
     max_roads_intersection = 4 # maximum allowed roads in an intersection
     vertex_added_list = list(vertex_added_dict.keys()) # list of unique vertex positions
     # KDTree of unique vertices used to compute nearest neighbours
@@ -181,7 +183,8 @@ def verify_segment(config, segment, min_vertex_distance, segment_added_list, ver
         return new_segment
         
     # We do not consider the segment further if it breaks the boundaries or if it is located in water.
-    if (segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y):
+    if ((segment.end_vert.position[0] > max_x or segment.end_vert.position[1] > max_y) or
+       (segment.end_vert.position[0] < 0 or segment.end_vert.position[1] < 0)):
         return None
     elif np.array_equal(find_pixel_value(segment, config.water_map_array), config.water_legend):
         return None

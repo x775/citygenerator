@@ -10,7 +10,7 @@ import skimage.morphology
 # values. All pixels contain [r, g, b]-values.
 def parse_image(filename):
     image_array = np.asarray(Image.open(filename))
-    # Remove alpha value if image only contains a single½    color.
+    # Remove alpha value if image only contains a single color.
     if image_array.shape[2] == 4:
         image_array = np.delete(image_array, 3, 2)
     return image_array
@@ -76,7 +76,7 @@ def find_legend_centers(image_array, legend):
     return np.array(centroids)
 
 
-# INPUT:    numpy.Array, int/float
+# INPUT:    numpy.Array, Float
 # OUTPUT:   numpy.Array
 def rotate(vector, angle):
 
@@ -113,8 +113,8 @@ def get_population_density_values(segment, population_image_array):
     return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
 
 
-# INPUT: np.Array
-# OUTPUT: np.Array
+# INPUT: numpy.Array
+# OUTPUT: numpy.Array
 # normalise pixel values to single value in range [0,1]
 def normalise_pixel_values(image_array):
     return image_array[:,:,0] / 255

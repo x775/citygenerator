@@ -25,6 +25,7 @@ class ConfigLoader:
         self.road_rules_array = parse_image(path + self.rule_image_name)
         self.population_density_array = parse_image(path + self.population_density_image_name)
         self.radial_centers = find_legend_centers(self.road_rules_array, self.radial_legend)
-
-        # Parse water map
+        # Parse water map.
         self.water_map_array = parse_image(path + self.water_map_image_name)
+        # Parse land usage map.
+        #self.land_use_array = parse_image(path + self.land_use_image_name)
