@@ -78,7 +78,7 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
     # Start by generating all seeds from which minor roads may grow. Add them to queue.
     min_distance = config.minor_vertex_min_distance # Min distance between minor road vertices.
     for seed in minor_road_seed_candidates:
-        population_density = get_population_density_values(seed, normalise_pixel_values(config.population_density_array))
+        population_density = get_population_density_values(seed, config.population_density_array)
         suggested_seeds = minor_road_seed(config, seed, population_density)
 
         for suggested_seed in suggested_seeds:
@@ -120,7 +120,7 @@ def generate_minor_roads(config, segment_added_list, vertex_added_dict):
 # Generates suggested segments based on the road rule at the end position of the input segment
 def generate_suggested_segments(config, segment, rule_image_array, population_image_array):
     roadmap_rule = get_roadmap_rule(config, segment, rule_image_array)
-    population_density = get_population_density_values(segment, normalise_pixel_values(population_image_array))
+    population_density = get_population_density_values(segment, population_image_array)
 
     if roadmap_rule == Rules.RULE_GRID:
         suggested_segments = grid(config, segment, population_density)

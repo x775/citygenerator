@@ -11,7 +11,7 @@
     },
     "population_density_image_name": {
         "description": "Name of image used for population density.",
-        "value": "population_density.png"
+        "value": "Auckland_CBD_Pop_Density_scaled.tif"
     },
     "water_map_image_name": {
         "description": "Name of image used for water",
@@ -114,7 +114,23 @@
         "value": 0.1
     },
     "water_legend": {
-        "description": "Color used to represent water",
+        "description": "Color used to represent water.",
         "value": [255, 255, 255]
+    },
+    "residential_legend": {
+        "description": "Grayscale values used to represent residential areas.",
+        "value": [18, 19, 20, 23, 60, 8, 44, 3, 4, 68]
+    },
+    "commercial_legend": {
+        "description": "Grayscale values used to represent commercial areas.",
+        "value": [1, 10, 12, 22, 35, 49, 7, 45, 56, 63, 64, 54, 55]
+    },
+    "industry_legend": {
+        "description": "Grayscale values used to represent industry areas.",
+        "value": [17, 5, 16, 51]
+    },
+    "population": {
+        "description": "Total population of input area.",
+        "value": 239043
     }
 }

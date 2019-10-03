@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from matplotlib.path import Path
+from shapely.geometry import Polygon
 from src.utilities import read_tif_file
 
 # INPUT:    List, numpy.Array
@@ -47,7 +48,7 @@ def get_land_usage(polygons, config, N=2):
         }
 
         for coord in random_coords:
-            sample = list(config.land_use_array[coord[1]][coord[0]])
+            sample = list(config.land_use_array[coord[1]][coord[0]])[0]
             if sample in config.residential_legend:
                 land_usages["residential"] += 1
             elif sample in config.commercial_legend:
@@ -57,21 +58,32 @@ def get_land_usage(polygons, config, N=2):
 
         final_use = max(land_usages, key=land_usages.get)
         density = get_population_density(random_coords, config, density_array)
+        population = get_population(density, polygon)
 
-        polygon_results.append({"polygon" : polygon, "land_usage" : final_use, "population_density" : density})
+        polygon_results.append({"polygon" : polygon, "land_usage" : final_use, 
+                                "population_density" : density, "population" : population})
 
     return polygon_results
 
 
 # INPUT:    List, Config
 # OUTPUT:   List
+# Return the average population density for the given polygon.
 def get_population_density(indices, config, density_array):
     population_density = []
     for index in indices:
-        scaled_x = int(round(index[0] * density_array.shape[0] / config.land_use_array.shape[0]))
-        scaled_y = int(round(index[1] * density_array.shape[1] / config.land_use_array.shape[1]))
-        density = density_array[scaled_x, scaled_y]
+        density = density_array[index[1], index[0]]
         population_density.append(density)
 
-    # Return the average population desnsity.
-    return sum(population_density) / float(len(population_density))
+    # Return the average population density.
+    return sum(population_density) / len(population_density)
+
+
+# INPUT:    Float, List
+# OUTPUT:   Integer
+# Return the corresponding population given a polygon w/ density.
+# Shapely.Polygon.area assumes list of vertices is in clockwise or
+# anti-clockwise manner. 
+def get_population(density, polygon):
+    area = Polygon(polygon).area
+    return density * area

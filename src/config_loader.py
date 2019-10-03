@@ -23,7 +23,7 @@ class ConfigLoader:
         # Parse road rule map and population density map.
         path = os.getcwd() + "/input/images/"
         self.road_rules_array = parse_image(path + self.rule_image_name)
-        self.population_density_array = parse_image(path + self.population_density_image_name)
+        self.population_density_array = read_tif_file(path + self.population_density_image_name)
         self.radial_centers = find_legend_centers(self.road_rules_array, self.radial_legend)
         # Parse water map.
         self.water_map_array = parse_image(path + self.water_map_image_name)
