@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 from src.utilities import parse_image
+from src.utilities import read_tif_file
 from src.utilities import find_legend_centers
 from src.utilities import find_legend_color_coordinates
 from src.road_network.segment import Segment

@@ -110,7 +110,7 @@ def compute_intersection(segment_one, segment_two):
 # OUTPUT:   Integer
 # Get the population density value for a specific pixel of
 # the population density image
-def get_population_density_values(segment, population_image_array):
+def get_population_density_value(segment, population_image_array):
     return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
 
 

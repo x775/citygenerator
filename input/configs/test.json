@@ -117,20 +117,20 @@
         "description": "Color used to represent water.",
         "value": [255, 255, 255]
     },
-    "residential_legend": {
+    "residential_legends": {
         "description": "Grayscale values used to represent residential areas.",
         "value": [18, 19, 20, 23, 60, 8, 44, 3, 4, 68]
     },
-    "commercial_legend": {
+    "commercial_legends": {
         "description": "Grayscale values used to represent commercial areas.",
         "value": [1, 10, 12, 22, 35, 49, 7, 45, 56, 63, 64, 54, 55]
     },
-    "industry_legend": {
+    "industry_legends": {
         "description": "Grayscale values used to represent industry areas.",
         "value": [17, 5, 16, 51]
     },
-    "population": {
-        "description": "Total population of input area.",
-        "value": 239043
+    "population_scaling_factor": {
+        "description": "Value used to scale population density to [0-1] range.",
+        "value": 9.043963245335577
     }
 }

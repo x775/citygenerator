@@ -48,12 +48,12 @@ def get_land_usage(polygons, config, N=2):
         }
 
         for coord in random_coords:
-            sample = list(config.land_use_array[coord[1]][coord[0]])[0]
-            if sample in config.residential_legend:
+            sample = config.land_use_array[coord[1]][coord[0]][0]
+            if sample in config.residential_legends:
                 land_usages["residential"] += 1
-            elif sample in config.commercial_legend:
+            elif sample in config.commercial_legends:
                 land_usages["commercial"] += 1
-            elif sample in config.industry_legend:
+            elif sample in config.industry_legends:
                 land_usages["industry"] += 1
 
         final_use = max(land_usages, key=land_usages.get)
