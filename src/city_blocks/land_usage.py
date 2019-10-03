@@ -35,9 +35,6 @@ def get_land_usage(polygons, config, N=2):
         indices = np.where(mask)
 
         inner_coords = np.array(list(zip(indices[1], indices[0])))
-        if inner_coords.size == 0:
-            #print(grid)    
-            print(positions)
         random_indices = np.random.choice(inner_coords.shape[0], math.ceil(len(inner_coords) / N), replace=False)
         random_coords = inner_coords[random_indices]
         
@@ -45,7 +42,6 @@ def get_land_usage(polygons, config, N=2):
             "residential" : 0,
             "commercial" : 0,
             "industry" : 0,
-            "none" : 0
         }
 
         for coord in random_coords:
@@ -56,10 +52,11 @@ def get_land_usage(polygons, config, N=2):
                 land_usages["commercial"] += 1
             elif sample in config.industry_legends:
                 land_usages["industry"] += 1
-            else:
-                land_usages["none"] +1
-
+        
         final_use = max(land_usages, key=land_usages.get)
+        if land_usages[final_use] == 0:
+            final_use = "none"
+
         density = get_population_density(random_coords, config.population_density_array)
         population = get_population(density, positions)
 
