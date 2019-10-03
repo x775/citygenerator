@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import skimage.morphology
+import gdal
 
 # INPUT:    String
 # OUTPUT:   numpy.Array
@@ -105,16 +106,25 @@ def compute_intersection(segment_one, segment_two):
         return np.array([np.inf, np.inf])
 
 
-# INPUT: Segment, np.Array
-# OUTPUT: int
+# INPUT:    Segment, np.Array
+# OUTPUT:   Integer
 # Get the population density value for a specific pixel of
 # the population density image
 def get_population_density_values(segment, population_image_array):
     return population_image_array[int(segment.end_vert.position[1])][int(segment.end_vert.position[0])]
 
 
-# INPUT: numpy.Array
-# OUTPUT: numpy.Array
+# INPUT:    numpy.Array
+# OUTPUT:   numpy.Array
 # normalise pixel values to single value in range [0,1]
 def normalise_pixel_values(image_array):
     return image_array[:,:,0] / 255
+
+
+# INPUT:    String
+# OUTPUT:   numpy.Array
+import gdal
+def read_tif_file(filename):
+    gdo = gdal.Open(filename)
+    band = gdo.GetRasterBand(1)
+    return np.array(gdo.ReadAsArray(0, 0, band.XSize, band.YSize))

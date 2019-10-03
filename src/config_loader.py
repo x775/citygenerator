@@ -28,4 +28,4 @@ class ConfigLoader:
         # Parse water map.
         self.water_map_array = parse_image(path + self.water_map_image_name)
         # Parse land usage map.
-        #self.land_use_array = parse_image(path + self.land_use_image_name)
+        self.land_use_array = parse_image(path + self.land_use_image_name)
