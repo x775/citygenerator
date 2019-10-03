@@ -5,30 +5,29 @@ from operator import itemgetter
 # OUTPUT:   List
 # Creates a list of all polygons in the generated road network
 def get_polygons(vertex_dict):
-    angles = get_angles(vertex_dict)
+    wedges = get_wedges(vertex_dict)
     polygons = []
 
     # INPUT:    Tuple
     # OUTPUT:   Tuple | None
-    # Find a new set of vertices forming an angle that shares
-    # a segment with the input vertices. This ensures the list
-    # returned is in a clockwise order.
-    def search(angle):
-        for ang in angles:            
-            if angle[1] is ang[0] and angle[2] is ang[1]:
-                return ang
+    # Find a new set of vertices forming a wedge that shares a segment with the
+    # input vertices. This ensures the list returned is in a clockwise order.
+    def search(wedge):
+        for w in wedges:            
+            if wedge[1] is w[0] and wedge[2] is w[1]:
+                return w
         return None
 
-    while len(angles) > 0:
-        start = current_angle = angles[0]
+    while len(wedges) > 0:
+        start = current_wedge = wedges[0]
         current_polygon = []
 
         while True:
-            current_polygon.append(current_angle[0])
-            current_angle = search(current_angle)
-            if current_angle is not None:
-                angles.remove(current_angle)
-                if current_angle is start:
+            current_polygon.append(current_wedge[0])
+            current_wedge = search(current_wedge)
+            if current_wedge is not None:
+                wedges.remove(current_wedge)
+                if current_wedge is start:
                     polygons.append(current_polygon)
                     break
     
@@ -37,11 +36,12 @@ def get_polygons(vertex_dict):
 
 # INPUT:    Dictionary
 # OUTPUT:   List
-# Get tuples of vertices forming angles. I.e. each tuple contains three vertices.
-# Each vertex in the road network is considered one at a time.
-# A vertex with four segments connected to it will have four different angles as output.
-def get_angles(vertex_dict):
-    all_angles = []
+# Get tuples of vertices forming wedges. I.e. each tuple contains three
+# vertices. Each vertex in the road network is considered one at a time. A
+# vertex with four segments connected to it will have four different wedges as
+# output.
+def get_wedges(vertex_dict):
+    all_wedges = []
     for vertex, segments in vertex_dict.items():
 
         alphas = []
@@ -74,6 +74,6 @@ def get_angles(vertex_dict):
                 angle = next_alpha[1] - alpha[1]
 
             angle %= 360
-            all_angles.append((alpha[0], vertex, next_alpha[0], angle))
+            all_wedges.append((alpha[0], vertex, next_alpha[0], angle))
 
-    return all_angles
+    return all_wedges
