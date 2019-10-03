@@ -30,9 +30,9 @@ def grid(config, segment, population_density):
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(straight_segment_array))
         suggested_segments.append(new_segment)
 
-    # We multiply the probability with the population density twice because we
+    # We multiply the probability with the population density because we
     # want to increase the probability of turning the closer to the density.
-    road_turn_probability = road_turn_probability * population_density ** 2
+    road_turn_probability = road_turn_probability * (population_density + 1)
     
     # Rotate unit vector 90 degrees.
     rotated_unit_vector = rotate(segment_unit_vector, 90)

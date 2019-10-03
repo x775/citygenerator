@@ -31,8 +31,8 @@ def organic(config, segment, population_density):
         suggested_segments.append(new_segment)
 
     # We multiply the probability with the population density because we want to
-    # modestly increase the probability of turning the closer to the density.
-    road_turn_probability = road_turn_probability * population_density
+    # modestly increase the probability of turning the closer to the density.b
+    road_turn_probability = road_turn_probability * (population_density + 1)
 
     # Generate new segment turning right.
     if random.uniform(0, 1) <= road_turn_probability:

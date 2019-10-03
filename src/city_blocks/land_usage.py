@@ -21,30 +21,31 @@ from src.utilities import read_tif_file
 # type of land use assigned to the polygon. Meshgrid implementation inspired:
 # by https://stackoverflow.com/a/45731214
 def get_land_usage(polygons, config, N=2):
-    x, y = np.meshgrid(np.arange(config.land_use_array.shape[0]), np.arange(config.land_use_array.shape[1]))
+    size = max(config.land_use_array.shape[0], config.land_use_array.shape[1])
+    x, y = np.meshgrid(np.arange(size), np.arange(size))
     x, y = x.flatten(), y.flatten()
     points = np.vstack((x, y)).T
-
-    # Extract the density array once; re-use for every polygon.
-    density_array = read_tif_file(config.population_density_image_name)
     
     polygon_results = []
     for polygon in polygons:
         positions = [(int(round(vertex.position[0])), int(round(vertex.position[1]))) for vertex in polygon]
         path = Path(positions)
         grid = path.contains_points(points)
-        mask = grid.reshape(config.land_use_array.shape[0], config.land_use_array.shape[1])
+        mask = grid.reshape(size, size)
         indices = np.where(mask)
 
-        inner_coords = np.array(list(zip(indices[0], indices[1])))
-
+        inner_coords = np.array(list(zip(indices[1], indices[0])))
+        if inner_coords.size == 0:
+            #print(grid)    
+            print(positions)
         random_indices = np.random.choice(inner_coords.shape[0], math.ceil(len(inner_coords) / N), replace=False)
         random_coords = inner_coords[random_indices]
         
         land_usages = {
             "residential" : 0,
             "commercial" : 0,
-            "industry" : 0
+            "industry" : 0,
+            "none" : 0
         }
 
         for coord in random_coords:
@@ -55,13 +56,15 @@ def get_land_usage(polygons, config, N=2):
                 land_usages["commercial"] += 1
             elif sample in config.industry_legends:
                 land_usages["industry"] += 1
+            else:
+                land_usages["none"] +1
 
         final_use = max(land_usages, key=land_usages.get)
-        density = get_population_density(random_coords, config, density_array)
-        population = get_population(density, polygon)
+        density = get_population_density(random_coords, config.population_density_array)
+        population = get_population(density, positions)
 
-        polygon_results.append({"polygon" : polygon, "land_usage" : final_use, 
-                                "population_density" : density, "population" : population})
+        polygon_results.append({"polygon" : [(float(vertex.position[0]), float(vertex.position[1])) for vertex in polygon], 
+                                "land_usage" : final_use, "population_density" : density, "population" : population})
 
     return polygon_results
 
@@ -69,10 +72,10 @@ def get_land_usage(polygons, config, N=2):
 # INPUT:    List, Config
 # OUTPUT:   List
 # Return the average population density for the given polygon.
-def get_population_density(indices, config, density_array):
+def get_population_density(indices, population_density_array):
     population_density = []
     for index in indices:
-        density = density_array[index[1], index[0]]
+        density = population_density_array[index[1], index[0]]
         population_density.append(density)
 
     # Return the average population density.
@@ -81,9 +84,9 @@ def get_population_density(indices, config, density_array):
 
 # INPUT:    Float, List
 # OUTPUT:   Integer
-# Return the corresponding population given a polygon w/ density.
+# Return the corresponding population given positions of a polygon w/ density.
 # Shapely.Polygon.area assumes list of vertices is in clockwise or
 # anti-clockwise manner. 
-def get_population(density, polygon):
-    area = Polygon(polygon).area
+def get_population(density, positions):
+    area = Polygon(positions).area
     return density * area

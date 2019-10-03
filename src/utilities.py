@@ -123,7 +123,6 @@ def normalise_pixel_values(image_array):
 
 # INPUT:    String
 # OUTPUT:   numpy.Array
-import gdal
 def read_tif_file(filename):
     gdo = gdal.Open(filename)
     band = gdo.GetRasterBand(1)

@@ -16,9 +16,9 @@ def minor_road_seed(config, segment, population_density):
     # Compute the unit vector of the given segment to determine direction.
     segment_unit_vector = (segment.end_vert.position - segment.start_vert.position)/segment.segment_norm()
 
-    # We multiply the probability with the population density twice because we
-    # want to increase the probability of turning the closer to the density.  
-    road_turn_probability = probability_seed * population_density 
+    # We multiply the probability with the population density because we want to
+    # modestly increase the probability of turning the closer to the density.
+    road_turn_probability = probability_seed * (population_density + 1)
 
     # Rotate unit vector 90 degrees.
     rotated_unit_vector = rotate(segment_unit_vector, 90)

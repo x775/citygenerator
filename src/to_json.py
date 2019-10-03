@@ -1,29 +1,33 @@
+import os
 import json
 
-def road_network_to_json(road_network):
+
+# INPUT:    List, Dict, Dict
+# OUTPUT:   -
+def city_to_json(road_network, vertices, land_usages):
     output = {}
+
+    # Save all vertices in road network.
     output['roadSegments'] = []
     output['roadVertices'] = []
-    for segment in road_network:
-        output['roadVertices'].append({
-            'position': {
-                'x': float(segment.start_vert.position[0]),
-                'y': float(segment.start_vert.position[1])
-                }})
-        output['roadVertices'].append({
-            'position': {
-                'x': float(segment.end_vert.position[0]),
-                'y': float(segment.end_vert.position[1])
-        }})
-        output['roadSegments'].append({
-            'startVertIndex': len(output['roadVertices']) - 2,
-            'endVertIndex': len(output['roadVertices']) - 1
+    for vertex in vertices:
+        output["roadVertices"].append({
+            "position": {
+                'x' : float(vertex.position[0]),
+                'y' : float(vertex.position[1])
+            }
         })
 
-    with open("roadnetwork.json", "w") as out:
+    # Save all segments in road network.
+    for segment in road_network:
+        output["roadSegments"].append({
+            "startVertIndex" : vertices.index(segment.start_vert),
+            "endVertIndex" : vertices.index(segment.end_vert)
+        })
+
+    # Save all polygons w/ land usage, population density, and population.
+    output["land_usages"] = land_usages
+
+    # Dump to json file.
+    with open(os.getcwd() + "/output/roadnetwork.json", "w") as out:
         json.dump(output, out)
-
-
-
-
-    

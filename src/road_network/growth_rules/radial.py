@@ -28,6 +28,7 @@ def radial(config, segment, population_density):
     radial_vector = segment.end_vert.position - nearest_center
     radial_unit_vector = radial_vector / np.linalg.norm(radial_vector)
 
+    # Find degree between segment_unit_vector and radial_unit_vector.
     alpha = np.degrees(np.arccos(np.clip(np.dot(segment_unit_vector, radial_unit_vector), -1.0, 1.0)))
 
     if (alpha >= 45 and alpha < 90) or (alpha >= 225 and alpha < 270): 
@@ -39,9 +40,9 @@ def radial(config, segment, population_density):
 
     rotated_unit_vector = rotate(segment_unit_vector, alpha)
 
-    # We multiply the probability with the population density twice because we
+    # We multiply the probability with the population density because we
     # want to increase the probability of turning the closer to the density.  
-    road_turn_probability = road_turn_probability * population_density ** 2
+    road_turn_probability = road_turn_probability * (population_density + 1)
     
     # Generate a new segment going straight.
     if random.uniform(0, 1) <= road_straight_probability:
