@@ -11,6 +11,8 @@ from src.road_network.road_network_generator import generate_road_network
 import src.city_blocks.polygons as polygons
 import src.city_blocks.land_usage as land_usage
 from src.stats import compute_orientation_histogram, show_orientation_histogram
+from src.stats import compute_orientation_entropy, compute_orientation_order
+from src.stats import compute_average_node_degree
 
 
 # INPUT:    String, (Bool, Bool)
@@ -32,13 +34,22 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
     city_to_json(road_network, list(vertex_dict.keys()), land_usages)
 
     if show_time:
-        print(time.process_time() - t)
+        print('Time:', time.process_time() - t)
+
+    if show_stats:
+        orientation_histogram = compute_orientation_histogram(road_network)
+        entropy = compute_orientation_entropy(orientation_histogram)
+        orientation_order = compute_orientation_order(entropy)
+        avg_node_degree = compute_average_node_degree(vertex_dict)
+
+        print('Entropy:', entropy)
+        print('Orientation-Order:', orientation_order)
+        print('Average Node Degree:', avg_node_degree)
 
     if show_city:
         visualise(config.water_map_array, road_network, land_usages)
 
     if show_stats:
-        orientation_histogram = compute_orientation_histogram(road_network)
         show_orientation_histogram(orientation_histogram)
 
 

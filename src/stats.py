@@ -4,6 +4,23 @@ import matplotlib.pyplot as plt
 
 NUM_BINS = 36
 
+# This is the average degree of the graph vertices for a simplified graph containing only
+# intersections and dead ends.
+# Metric taken from https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
+def compute_average_node_degree(vertex_dict):
+    node_sum = 0
+    degree_sum = 0
+    for _, road_segments in vertex_dict.items():
+        # Ignore straights and bends
+        if len(road_segments) == 2:
+            continue
+        
+        degree_sum += len(road_segments)
+        node_sum += 1
+    return degree_sum / node_sum
+
+
+# Metric taken from https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
 def compute_orientation_histogram(road_segments):
     histogram = [0 for i in range(NUM_BINS)] # Zero all bins
     for road_segment in road_segments:
@@ -23,11 +40,28 @@ def compute_orientation_histogram(road_segments):
         histogram[bin_backward] += road_length
     return histogram
 
+# Metric formula taken from: https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
 def compute_orientation_entropy(orientation_histogram):
-    pass
+    # Compute normalized histogram (each bin value represents the proporation of orientations that fall in that bin)
+    sum = 0
+    for bin in orientation_histogram:
+        sum += bin
+    norm_histogram = orientation_histogram / sum
 
+    entropy = 0
+    for proportion in norm_histogram:
+        entropy -= proportion * math.log(proportion)
+
+    return entropy
+
+# Metric formula taken from: https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
+# INPUT: Orientation entropy (float)
+# OUPUT: Orientation order (float) - (0, 1) from perfectly uniform to idealized four-way grid
 def compute_orientation_order(orientation_entropy):
-    pass
+    min_entropy = -0.25 * math.log(0.25) * 4 # Perfect grid
+    max_entropy = math.log(NUM_BINS) # Perfectly uniform distribution of street bearings
+    orientation_order = 1 - ((orientation_entropy - min_entropy) / (max_entropy - min_entropy)) ** 2
+    return orientation_order
 
 def show_orientation_histogram(orientation_histogram):
     # Calculate bin centers
@@ -37,7 +71,6 @@ def show_orientation_histogram(orientation_histogram):
     # Plot polar histogram
     fig = plt.figure(figsize=(10,8))
     ax = fig.add_subplot(111, projection='polar')
+    ax.set_yticklabels([])
     ax.bar(centers, orientation_histogram, width=bin_width, bottom=0.0, color='.8', edgecolor='k')
-    ax.set_theta_zero_location("N")
-    ax.set_theta_direction(-1)
     plt.show()
