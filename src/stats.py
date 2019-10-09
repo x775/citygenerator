@@ -19,6 +19,25 @@ def compute_average_node_degree(vertex_dict):
         node_sum += 1
     return degree_sum / node_sum
 
+# Counts the number of intersections in the road network
+def compute_intersection_count(vertex_dict):
+    node_sum = 0
+    for _, road_segments in vertex_dict.items():
+        # Ignore straights, bends and dead ends
+        if len(road_segments) <= 2:
+            continue
+        
+        node_sum += 1
+    return node_sum
+
+# Sums the road length of all road segments in the graph
+def compute_total_road_length(road_segments):
+    length_sum = 0
+    for road_segment in road_segments:
+        road_vector = road_segment.end_vert.position - road_segment.start_vert.position
+        road_length = np.linalg.norm(road_vector)
+        length_sum += road_length
+    return length_sum
 
 # Metric taken from https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
 def compute_orientation_histogram(road_segments):

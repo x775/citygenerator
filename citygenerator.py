@@ -12,7 +12,7 @@ import src.city_blocks.polygons as polygons
 import src.city_blocks.land_usage as land_usage
 from src.stats import compute_orientation_histogram, show_orientation_histogram
 from src.stats import compute_orientation_entropy, compute_orientation_order
-from src.stats import compute_average_node_degree
+from src.stats import compute_average_node_degree, compute_intersection_count, compute_total_road_length
 
 
 # INPUT:    String, (Bool, Bool)
@@ -41,10 +41,14 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
         entropy = compute_orientation_entropy(orientation_histogram)
         orientation_order = compute_orientation_order(entropy)
         avg_node_degree = compute_average_node_degree(vertex_dict)
+        intersection_count = compute_intersection_count(vertex_dict)
+        total_road_length = compute_total_road_length(road_network)
 
         print('Entropy:', entropy)
         print('Orientation-Order:', orientation_order)
         print('Average Node Degree:', avg_node_degree)
+        print('Intersection Count:', intersection_count)
+        print('Total Road Length:', total_road_length)
 
     if show_city:
         visualise(config.water_map_array, road_network, land_usages)
