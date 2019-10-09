@@ -10,11 +10,12 @@ from src.road_network.segment import Segment
 from src.road_network.road_network_generator import generate_road_network
 import src.city_blocks.polygons as polygons
 import src.city_blocks.land_usage as land_usage
+from src.stats import compute_orientation_histogram, show_orientation_histogram
 
 
 # INPUT:    String, (Bool, Bool)
 # OUTPUT:   Generated city (visualisation)
-def generate(config_path, show_city=False, show_time=False):
+def generate(config_path, show_city=False, show_time=False, show_stats=False):
     if show_time:
         t = time.process_time()
 
@@ -35,6 +36,10 @@ def generate(config_path, show_city=False, show_time=False):
 
     if show_city:
         visualise(config.water_map_array, road_network, land_usages)
+
+    if show_stats:
+        orientation_histogram = compute_orientation_histogram(road_network)
+        show_orientation_histogram(orientation_histogram)
 
 
 # INPUT:    numpy.Array, List, Dict
@@ -77,4 +82,4 @@ def visualise(water_map_array, road_network, land_usages):
 
 if __name__ == "__main__":
     random.seed(42)
-    generate(os.getcwd() + "/input/configs/test.json", show_city=True, show_time=True)
+    generate(os.getcwd() + "/input/configs/test.json", show_city=True, show_time=True, show_stats=True)
