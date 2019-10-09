@@ -142,4 +142,5 @@ def show_orientation_histogram(orientation_histogram):
     ax = fig.add_subplot(111, projection='polar')
     ax.set_yticklabels([])
     ax.bar(centers, orientation_histogram, width=bin_width, bottom=0.0, color='.8', edgecolor='k')
+    ax.set_theta_direction(-1) # y axis going from top to bottom, so angles go clockwise
     plt.show()
