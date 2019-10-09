@@ -35,6 +35,10 @@ def get_land_usage(polygons, config, N=2):
         indices = np.where(mask)
 
         inner_coords = np.array(list(zip(indices[1], indices[0])))
+
+        if inner_coords.size == 0:
+            continue
+
         random_indices = np.random.choice(inner_coords.shape[0], math.ceil(len(inner_coords) / N), replace=False)
         random_coords = inner_coords[random_indices]
         
@@ -58,7 +62,7 @@ def get_land_usage(polygons, config, N=2):
             final_use = "none"
 
         density = get_population_density(random_coords, config.population_density_array)
-        population = get_population(density, positions)
+        population = get_population(config.pixel_scaling_factor, density, positions)
 
         polygon_results.append({"polygon" : [(float(vertex.position[0]), float(vertex.position[1])) for vertex in polygon], 
                                 "land_usage" : final_use, "population_density" : density, "population" : population})
@@ -84,6 +88,7 @@ def get_population_density(indices, population_density_array):
 # Return the corresponding population given positions of a polygon w/ density.
 # Shapely.Polygon.area assumes list of vertices is in clockwise or
 # anti-clockwise manner. 
-def get_population(density, positions):
-    area = Polygon(positions).area
-    return density * area
+def get_population(scale, density, positions):
+    scaled_positions = [(position[0] * scale, position[1] * scale) for position in positions]
+    area = Polygon(scaled_positions).area
+    return math.ceil(density * area)

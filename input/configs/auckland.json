@@ -2,7 +2,7 @@
     "axiom": {
         "description": "Default starting segments.",
         "value": [
-            [[80,300],[81,300]]
+            [[375,40],[375,41]]
         ]
     },
     "rule_image_name": {
@@ -27,11 +27,11 @@
     },
     "max_minor_road_iterations": {
         "description": "Maximum number of iterations for generating minor roads",
-        "value": 1000
+        "value": 2000
     },
     "major_vertex_min_distance": {
         "description": "Minimum allowed distance between major road vertices.",
-        "value": 6
+        "value": 40
     },
     "grid_straight_road_probability": {
         "description": "Probability [0-1] of a road going straight being generated for the grid pattern.",
@@ -71,15 +71,15 @@
     },
     "radial_road_turn_probability": {
         "description": "Probability [0-1] that a turn will be generated for the radial pattern.",
-        "value": 0.2
+        "value": 0.1
     },
     "radial_road_min_length": {
         "description": "Minimum length of a road segment for the radial pattern.",
-        "value": 0.8
+        "value": 80
     },
     "radial_road_max_length": {
         "description": "Maximum length of a road segment for the radial pattern.",
-        "value": 1.6
+        "value": 90
     },
     "grid_legend": {
         "description": "Color used to represent the grid rule.",
@@ -132,5 +132,9 @@
     "population_scaling_factor": {
         "description": "Value used to scale population density to [0-1] range.",
         "value": 9.043963245335577
+    },
+    "pixel_scaling_factor" : {
+        "description" : "Value used to scale pixels to meters. Derived from input image using QGIS.",
+        "value" : 12.972477064
     }
 }
