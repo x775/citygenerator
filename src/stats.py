@@ -30,6 +30,56 @@ def compute_intersection_count(vertex_dict):
         node_sum += 1
     return node_sum
 
+# The is the proportion of 3-way intersections with respect to the simplified graph containing only
+# intersections and dead ends.
+def compute_proportion_3way_intersections(vertex_dict):
+    node_sum = 0
+    three_way_sum = 0
+    for _, road_segments in vertex_dict.items():
+        # Ignore straights and bends
+        if len(road_segments) == 2:
+            continue
+        
+        # Count if 4-way intersection
+        if len(road_segments) == 3:
+            three_way_sum += 1
+        node_sum += 1
+    return three_way_sum / node_sum
+
+# The is the proportion of 4-way intersections with respect to the simplified graph containing only
+# intersections and dead ends.
+# Metric taken from https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
+def compute_proportion_4way_intersections(vertex_dict):
+    node_sum = 0
+    four_way_sum = 0
+    for _, road_segments in vertex_dict.items():
+        # Ignore straights and bends
+        if len(road_segments) == 2:
+            continue
+        
+        # Count if 4-way intersection
+        if len(road_segments) == 4:
+            four_way_sum += 1
+        node_sum += 1
+    return four_way_sum / node_sum
+
+# The is the proportion of dead-ends with respect to the simplified graph containing only
+# intersections and dead-ends.
+# Metric taken from https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0189-1
+def compute_proportion_dead_ends(vertex_dict):
+    node_sum = 0
+    dead_end_sum = 0
+    for _, road_segments in vertex_dict.items():
+        # Ignore straights and bends
+        if len(road_segments) == 2:
+            continue
+        
+        # Count if dead-end
+        if len(road_segments) == 1:
+            dead_end_sum += 1
+        node_sum += 1
+    return dead_end_sum / node_sum
+
 # Sums the road length of all road segments in the graph
 def compute_total_road_length(road_segments):
     length_sum = 0
