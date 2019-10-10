@@ -49,7 +49,7 @@ def get_land_usage(polygons, config, N=2):
         }
 
         for coord in random_coords:
-            sample = config.land_use_array[coord[1]][coord[0]][0]
+            sample = config.land_use_array[coord[1]][coord[0]]
             if sample in config.residential_legends:
                 land_usages["residential"] += 1
             elif sample in config.commercial_legends:

@@ -46,7 +46,7 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
         proportion_3way_intersections = compute_proportion_3way_intersections(vertex_dict)
         proportion_4way_intersections = compute_proportion_4way_intersections(vertex_dict)
         intersection_count = compute_intersection_count(vertex_dict)
-        total_road_length = compute_total_road_length(road_network)
+        total_road_length = compute_total_road_length(road_network, config)
 
         print('Entropy:', entropy)
         print('Orientation-Order:', orientation_order)

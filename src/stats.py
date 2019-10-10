@@ -81,11 +81,11 @@ def compute_proportion_dead_ends(vertex_dict):
     return dead_end_sum / node_sum
 
 # Sums the road length of all road segments in the graph
-def compute_total_road_length(road_segments):
+def compute_total_road_length(road_segments, config):
     length_sum = 0
     for road_segment in road_segments:
         road_vector = road_segment.end_vert.position - road_segment.start_vert.position
-        road_length = np.linalg.norm(road_vector)
+        road_length = np.linalg.norm(road_vector) * config.pixel_scaling_factor
         length_sum += road_length
     return length_sum
 
