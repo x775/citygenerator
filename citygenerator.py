@@ -104,4 +104,4 @@ def visualise(water_map_array, road_network, land_usages):
 
 if __name__ == "__main__":
     random.seed(42)
-    generate(os.getcwd() + "/input/configs/auckland.json", show_city=True, show_time=True, show_stats=False)
+    generate(os.getcwd() + "/input/configs/auckland.json", show_city=True, show_time=True, show_stats=True)

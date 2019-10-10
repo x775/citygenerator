@@ -27,7 +27,7 @@
     },
     "max_minor_road_iterations": {
         "description": "Maximum number of iterations for generating minor roads",
-        "value": 2000
+        "value": 10000
     },
     "major_vertex_min_distance": {
         "description": "Minimum allowed distance between major road vertices.",
