@@ -19,7 +19,7 @@
     },
     "land_use_image_name": {
         "description": "Name of image used for land use",
-        "value": "landuse_map.png"
+        "value": "Zoning_Raster_low_res.tif"
     },
     "max_road_network_iterations": {
         "description": "Maximum iterations allowed for generating road segments.",
