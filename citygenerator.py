@@ -94,8 +94,8 @@ def visualise(water_map_array, road_network, land_usages):
             color = "r"
 
         for vertex in poly:
-            x_coords.append(vertex[0])
-            y_coords.append(vertex[1])
+            x_coords.append(vertex['x'])
+            y_coords.append(vertex['z'])
         ax.fill(x_coords, y_coords, color)
 
     ax.autoscale()

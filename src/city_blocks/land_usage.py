@@ -64,7 +64,7 @@ def get_land_usage(polygons, config, N=2):
         density = get_population_density(random_coords, config.population_density_array)
         population = get_population(config.pixel_scaling_factor, density, positions)
 
-        polygon_results.append({"polygon" : [(float(vertex.position[0]), float(vertex.position[1])) for vertex in polygon], 
+        polygon_results.append({"polygon" : [{'x': float(vertex.position[0]), 'z': float(vertex.position[1]), 'mark': 0} for vertex in polygon], 
                                 "land_usage" : final_use, "population_density" : density, "population" : population})
 
     return polygon_results
