@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 ox.config(log_console=True, use_cache=True)
 weight_by_length = False
+NUM_BINS = 36
 
 # Grab Auckland matching the bbox we are using.
 Auckland = ox.graph_from_bbox(-36.83, -36.94, 174.82, 174.68, network_type='drive')
@@ -36,7 +37,6 @@ for edge in Auckland.edges:
 # Import and re-use statistic functions.
 from src.stats import compute_total_road_length
 from src.stats import compute_intersection_count
-from src.stats import compute_average_node_degree
 from src.stats import compute_proportion_dead_ends
 from src.stats import compute_proportion_3way_intersections
 from src.stats import compute_proportion_4way_intersections
@@ -69,20 +69,18 @@ from src.stats import compute_orientation_entropy
 from src.stats import show_orientation_histogram
 
 # Call everything.
-
 orientation_histogram = compute_orientation_histogram(road_segments)
 entropy = compute_orientation_entropy(orientation_histogram)
 orientation_order = compute_orientation_order(entropy)
-avg_node_degree = compute_average_node_degree(vertex_dict)
 proportion_dead_ends = compute_proportion_dead_ends(vertex_dict)
 proportion_3way_intersections = compute_proportion_3way_intersections(vertex_dict)
 proportion_4way_intersections = compute_proportion_4way_intersections(vertex_dict)
 intersection_count = compute_intersection_count(vertex_dict)
-total_road_length = compute_total_road_length(road_segments)
+# The scaling factor is hardcoded from the .json file for testing purposes.
+total_road_length = compute_total_road_length(road_segments, 12.972477064)
 
 print('Entropy:', entropy)
 print('Orientation-Order:', orientation_order)
-print('Average Node Degree:', avg_node_degree)
 print('Proportion Dead-Ends:', proportion_dead_ends)
 print('Proportion 3-way Intersections', proportion_3way_intersections)
 print('Proportion 4-way Intersections', proportion_4way_intersections)
