@@ -19,3 +19,10 @@ class Segment:
 
     def segment_norm(self):
         return np.linalg.norm(self.end_vert.position - self.start_vert.position)
+
+    def __hash__(self):
+        return hash(tuple(self.start_vert.position + self.end_vert.position))
+
+    def __eq__(self, other):
+        return ((self.start_vert == other.start_vert and self.end_vert == other.end_vert)
+             or (self.start_vert == other.end_vert and self.end_vert == other.start_vert))
