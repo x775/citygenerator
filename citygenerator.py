@@ -46,7 +46,7 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
         proportion_3way_intersections = compute_proportion_3way_intersections(vertex_dict)
         proportion_4way_intersections = compute_proportion_4way_intersections(vertex_dict)
         intersection_count = compute_intersection_count(vertex_dict)
-        total_road_length = compute_total_road_length(road_network, config)
+        total_road_length = compute_total_road_length(road_network, config=config)
 
         print('Entropy:', entropy)
         print('Orientation-Order:', orientation_order)
@@ -58,7 +58,7 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
         print('Total Road Length:', total_road_length)
 
     if show_city:
-        visualise(config.water_map_array, road_network, land_usages)
+        visualise(config.water_map_array, road_network, land_usages=land_usages)
 
     if show_stats:
         show_orientation_histogram(orientation_histogram)
@@ -66,7 +66,7 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
 
 # INPUT:    numpy.Array, List, Dict
 # OUTPUT:   matplotlib plot
-def visualise(water_map_array, road_network, land_usages):
+def visualise(water_map_array, road_network, land_usages=None):
     major_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
                             if not segment.is_minor_road]
     minor_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
@@ -80,23 +80,24 @@ def visualise(water_map_array, road_network, land_usages):
     ax.add_collection(major_lines)
     ax.add_collection(minor_lines)
 
-    for use in land_usages:
-        x_coords = []
-        y_coords = []
-        poly = use["polygon"]
-        if use["land_usage"] == "residential":
-            color = "purple"
-        elif use["land_usage"] == "commercial":
-            color = "y"
-        elif use["land_usage"] == "industry":
-            color = "b"
-        else:
-            color = "r"
+    if land_usages is not None:
+        for use in land_usages:
+            x_coords = []
+            y_coords = []
+            poly = use["polygon"]
+            if use["land_usage"] == "residential":
+                color = "purple"
+            elif use["land_usage"] == "commercial":
+                color = "y"
+            elif use["land_usage"] == "industry":
+                color = "b"
+            else:
+                color = "r"
 
-        for vertex in poly:
-            x_coords.append(vertex['x'])
-            y_coords.append(vertex['z'])
-        ax.fill(x_coords, y_coords, color)
+            for vertex in poly:
+                x_coords.append(vertex['x'])
+                y_coords.append(vertex['z'])
+            ax.fill(x_coords, y_coords, color)
 
     ax.autoscale()
     plt.show()

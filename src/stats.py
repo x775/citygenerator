@@ -81,11 +81,17 @@ def compute_proportion_dead_ends(vertex_dict):
     return dead_end_sum / node_sum
 
 # Sums the road length of all road segments in the graph
-def compute_total_road_length(road_segments, config):
+def compute_total_road_length(road_segments, config=None, pixel_scaling_factor=None):
+    if config is None and pixel_scaling_factor is None:
+        raise ValueError("One of config or pixel_scaling_factor parameters must be set")
+
+    if config is not None:
+        pixel_scaling_factor = config.pixel_scaling_factor
+
     length_sum = 0
     for road_segment in road_segments:
         road_vector = road_segment.end_vert.position - road_segment.start_vert.position
-        road_length = np.linalg.norm(road_vector) * config.pixel_scaling_factor
+        road_length = np.linalg.norm(road_vector) * pixel_scaling_factor
         length_sum += road_length
     return length_sum
 
@@ -132,7 +138,9 @@ def compute_orientation_order(orientation_entropy):
     orientation_order = 1 - ((orientation_entropy - min_entropy) / (max_entropy - min_entropy)) ** 2
     return orientation_order
 
-def show_orientation_histogram(orientation_histogram):
+# Displays the polar histogram of road orientations
+# y axis going from top to bottom, so angles go clockwise (theta_direction=-1) by default
+def show_orientation_histogram(orientation_histogram, theta_direction=-1):
     # Calculate bin centers
     bin_width = 2*math.pi / NUM_BINS
     centers = np.arange(0, 2*math.pi, bin_width)
@@ -142,5 +150,6 @@ def show_orientation_histogram(orientation_histogram):
     ax = fig.add_subplot(111, projection='polar')
     ax.set_yticklabels([])
     ax.bar(centers, orientation_histogram, width=bin_width, bottom=0.0, color='.8', edgecolor='k')
-    ax.set_theta_direction(-1) # y axis going from top to bottom, so angles go clockwise
+    ax.set_theta_direction(theta_direction) # y axis going from top to bottom, so angles go clockwise by default
+    ax.set_thetagrids(range(0, 360, 45), ('E', '', 'N', '', 'W', '', 'S'))
     plt.show()
