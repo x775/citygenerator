@@ -1,0 +1,140 @@
+{
+    "axiom": {
+        "description": "Default starting segments.",
+        "value": [
+            [[375,40],[375,41]]
+        ]
+    },
+    "rule_image_name": {
+        "description": "Name of image used for road network pattern rules.",
+        "value": "rule_image_grid.png"
+    },
+    "population_density_image_name": {
+        "description": "Name of image used for population density.",
+        "value": "Auckland_CBD_Pop_Density.tif"
+    },
+    "water_map_image_name": {
+        "description": "Name of image used for water",
+        "value": "water_map.png"
+    },
+    "land_use_image_name": {
+        "description": "Name of image used for land use",
+        "value": "Zoning_Raster_low_res.tif"
+    },
+    "max_road_network_iterations": {
+        "description": "Maximum iterations allowed for generating road segments.",
+        "value": 100
+    },
+    "max_minor_road_iterations": {
+        "description": "Maximum number of iterations for generating minor roads",
+        "value": 10000
+    },
+    "major_vertex_min_distance": {
+        "description": "Minimum allowed distance between major road vertices.",
+        "value": 40
+    },
+    "grid_straight_road_probability": {
+        "description": "Probability [0-1] of a road going straight being generated for the grid pattern.",
+        "value": 1
+    },
+    "grid_road_turn_probability": {
+        "description": "Probability [0-1] that a turn will be generated for the grid pattern.",
+        "value": 0.1
+    },
+    "grid_road_min_length": {
+        "description": "Minimum length of a road segment for the grid pattern.",
+        "value": 80
+    },
+    "grid_road_max_length": {
+        "description": "Maximum length of a road segment for the grid pattern.",
+        "value": 80
+    },
+    "organic_straight_road_probability": {
+        "description": "Probability [0-1] of a road going straight being generated for the organic pattern.",
+        "value": 1
+    },
+    "organic_road_turn_probability": {
+        "description": "Probability that a turn will be generated for the organic pattern.",
+        "value": 0.15
+    },
+    "organic_road_min_length": {
+        "description": "Minimum length of a road segment for the organic pattern.",
+        "value": 80
+    },
+    "organic_road_max_length": {
+        "description": "Maximum length of a road segment for the organic pattern.",
+        "value": 90
+    },
+    "radial_straight_road_probability": {
+        "description": "Probability [0-1] of a road going straight being generated for the radial pattern.",
+        "value": 1
+    },
+    "radial_road_turn_probability": {
+        "description": "Probability [0-1] that a turn will be generated for the radial pattern.",
+        "value": 0.1
+    },
+    "radial_road_min_length": {
+        "description": "Minimum length of a road segment for the radial pattern.",
+        "value": 80
+    },
+    "radial_road_max_length": {
+        "description": "Maximum length of a road segment for the radial pattern.",
+        "value": 90
+    },
+    "grid_legend": {
+        "description": "Color used to represent the grid rule.",
+        "value": [255, 100, 100]
+    },
+    "organic_legend": {
+        "description": "Color used to represent the organic rule.",
+        "value": [100, 255, 100]
+    },
+    "radial_legend": {
+        "description": "Color used to represent the radial rule.",
+        "value": [100, 100, 255]
+    },
+    "minor_road_min_length": {
+        "description": "Minimum length of a minor road seed road.",
+        "value": 10
+    },
+    "minor_road_max_length": {
+        "description": "Maximum length of a minor road seed road.",
+        "value": 10
+    },
+    "minor_road_seed_probability": {
+        "description": "Probability [0-1] of a minor road seed road being generated.",
+        "value": 1
+    },
+    "minor_vertex_min_distance": {
+        "description": "Minimum allowed distance between minor road vertices.",
+        "value": 8
+    },
+    "minor_road_organic_probability": {
+        "description": "Probability [0-1] of using the organic rule for minor roads.",
+        "value": 0
+    },
+    "water_legend": {
+        "description": "Color used to represent water.",
+        "value": [255, 255, 255]
+    },
+    "residential_legends": {
+        "description": "Grayscale values used to represent residential areas.",
+        "value": [18, 19, 20, 23, 60, 8, 44, 3, 4, 68]
+    },
+    "commercial_legends": {
+        "description": "Grayscale values used to represent commercial areas.",
+        "value": [1, 10, 12, 22, 35, 49, 7, 45, 56, 63, 64, 54, 55]
+    },
+    "industry_legends": {
+        "description": "Grayscale values used to represent industry areas.",
+        "value": [17, 5, 16, 51]
+    },
+    "population_scaling_factor": {
+        "description": "Value used to scale population density to [0-1] range.",
+        "value": 9.043963245335577
+    },
+    "pixel_scaling_factor" : {
+        "description" : "Value used to scale pixels to meters. Derived from input image using QGIS.",
+        "value" : 12.972477064
+    }
+}

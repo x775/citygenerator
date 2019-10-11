@@ -119,7 +119,7 @@ def compute_orientation_entropy(orientation_histogram):
 
     entropy = 0
     for proportion in norm_histogram:
-        entropy -= proportion * math.log(proportion)
+        entropy -= proportion * math.log(proportion + 1e-8)
 
     return entropy
 
