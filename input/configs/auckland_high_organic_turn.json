@@ -55,7 +55,7 @@
     },
     "organic_road_turn_probability": {
         "description": "Probability that a turn will be generated for the organic pattern.",
-        "value": 0.15
+        "value": 0.5
     },
     "organic_road_min_length": {
         "description": "Minimum length of a road segment for the organic pattern.",

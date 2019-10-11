@@ -2,12 +2,12 @@
     "axiom": {
         "description": "Default starting segments.",
         "value": [
-            [[375,40],[375,41]]
+            [[370,200],[375,205]]
         ]
     },
     "rule_image_name": {
         "description": "Name of image used for road network pattern rules.",
-        "value": "rule_image.png"
+        "value": "rule_image_radial.png"
     },
     "population_density_image_name": {
         "description": "Name of image used for population density.",

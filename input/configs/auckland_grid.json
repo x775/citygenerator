@@ -7,7 +7,7 @@
     },
     "rule_image_name": {
         "description": "Name of image used for road network pattern rules.",
-        "value": "rule_image.png"
+        "value": "rule_image_grid.png"
     },
     "population_density_image_name": {
         "description": "Name of image used for population density.",
@@ -111,7 +111,7 @@
     },
     "minor_road_organic_probability": {
         "description": "Probability [0-1] of using the organic rule for minor roads.",
-        "value": 0.1
+        "value": 0
     },
     "water_legend": {
         "description": "Color used to represent water.",
