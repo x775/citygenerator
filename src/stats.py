@@ -151,5 +151,8 @@ def show_orientation_histogram(orientation_histogram, theta_direction=-1):
     ax.set_yticklabels([])
     ax.bar(centers, orientation_histogram, width=bin_width, bottom=0.0, color='.8', edgecolor='k')
     ax.set_theta_direction(theta_direction) # y axis going from top to bottom, so angles go clockwise by default
-    ax.set_thetagrids(range(0, 360, 45), ('E', '', 'N', '', 'W', '', 'S'))
+    if theta_direction > 0:
+        ax.set_thetagrids(range(0, 360, 45), ('E', '', 'N', '', 'W', '', 'S'))
+    else:
+        ax.set_thetagrids(range(360, 0, -45), ('E', '', 'N', '', 'W', '', 'S'))
     plt.show()
