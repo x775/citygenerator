@@ -22,14 +22,13 @@ def get_polygons(vertex_dict):
         start = current_wedge = wedges[0]
         current_polygon = []
 
-        while True:
+        while current_wedge is not None:
             current_polygon.append(current_wedge[0])
+            wedges.remove(current_wedge)
+            if current_wedge[1] is start[0] and current_wedge[2] is start[1]:
+                polygons.append(current_polygon)
+                break
             current_wedge = search(current_wedge)
-            if current_wedge is not None:
-                wedges.remove(current_wedge)
-                if current_wedge is start:
-                    polygons.append(current_polygon)
-                    break
     
     return polygons
 
