@@ -31,14 +31,18 @@ def radial(config, segment, population_density):
     # Find degree between segment_unit_vector and radial_unit_vector.
     alpha = np.degrees(np.arccos(np.clip(np.dot(segment_unit_vector, radial_unit_vector), -1.0, 1.0)))
 
-    if (alpha >= 45 and alpha < 90) or (alpha >= 225 and alpha < 270): 
-        alpha -= 90
-    elif (alpha >= 90 and alpha < 135) or (alpha >= 270 and alpha < 315):
-        alpha += 90
+    # Find the angle to rotate the previous segment by that snaps the new segment
+    # to the nearest parallel or perpendicular radial axes.
+    if (alpha >= 45 and alpha < 135): 
+        alpha = 90 - alpha
+    elif (alpha >= 225 and alpha < 315):
+        alpha = 270 - alpha
     elif alpha >= 135 and alpha < 225:
-        alpha -= 180
+        alpha = 180 - alpha
+    else:
+        alpha = 0 - alpha
 
-    rotated_unit_vector = rotate(segment_unit_vector, alpha)
+    corrected_forward = rotate(segment_unit_vector, alpha)
 
     # We multiply the probability with the population density because we
     # want to increase the probability of turning the closer to the density.  
@@ -46,7 +50,7 @@ def radial(config, segment, population_density):
     
     # Generate a new segment going straight.
     if random.uniform(0, 1) <= road_straight_probability:
-        straight_segment_array = random.uniform(road_mininum_length, road_maximum_length) * rotated_unit_vector
+        straight_segment_array = random.uniform(road_mininum_length, road_maximum_length) * corrected_forward
         straight_segment_array += segment.end_vert.position
 
         new_segment = Segment(segment_start=segment.end_vert, segment_end=Vertex(straight_segment_array))
@@ -54,7 +58,7 @@ def radial(config, segment, population_density):
     
     # Generate a new segment turning right.
     if random.uniform(0, 1) <= road_turn_probability:
-        rotated_unit_vector = rotate(segment_unit_vector, 90)
+        rotated_unit_vector = rotate(corrected_forward, 90)
         turn_road_segment_array = random.uniform(road_mininum_length, road_maximum_length) * rotated_unit_vector
         turn_road_segment_array += segment.end_vert.position
 
@@ -63,7 +67,7 @@ def radial(config, segment, population_density):
 
     # Generate a new segment turning left.
     if random.uniform(0, 1) <= road_turn_probability:
-        rotated_unit_vector = rotate(segment_unit_vector, -90)
+        rotated_unit_vector = rotate(corrected_forward, -90)
         turn_road_segment_array = random.uniform(road_mininum_length, road_maximum_length) * rotated_unit_vector
         turn_road_segment_array += segment.end_vert.position
 
