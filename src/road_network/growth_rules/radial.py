@@ -14,18 +14,22 @@ def radial(config, segment, population_density):
 
     suggested_segments = []
 
+    # The start position we are measuring from for the radial axis line going towards the radial center
+    # Positioning this offset from the current vertex helps prevent spiraling
+    radial_axis_start = segment.end_vert.position + (segment.end_vert.position - segment.start_vert.position) * random.uniform(0.0, 1.0)
+
     # Compute the unit vector of the given segment to determine direction.
     segment_unit_vector = (segment.end_vert.position - segment.start_vert.position)/segment.segment_norm()
 
     # Find the nearest centroid for given segment.
-    nearest_center = config.radial_centers[np.argmin(np.linalg.norm(segment.end_vert.position - config.radial_centers, axis=1))]
+    nearest_center = config.radial_centers[np.argmin(np.linalg.norm(radial_axis_start - config.radial_centers, axis=1))]
 
     # In the case that the current segment ends at the radial center,
     # we return an empty list because the radial vector cannot be computed
     if np.array_equal(nearest_center, segment.end_vert.position):
         return suggested_segments
 
-    radial_vector = segment.end_vert.position - nearest_center
+    radial_vector = radial_axis_start - nearest_center
     radial_unit_vector = radial_vector / np.linalg.norm(radial_vector)
 
     # Find degree between segment_unit_vector and radial_unit_vector.
