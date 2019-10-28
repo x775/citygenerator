@@ -1,7 +1,8 @@
 # COMPSCI-715: Procedural City Generation
-<hr \>
 
-All source code for the **generator module** is available in this repository. Please refer to [https://github.com/LEChaney/ProceduralCitiesUnity](https://github.com/LEChaney/ProceduralCitiesUnity) for the road and building visualisation modules.
+All source code for the **generator module** is available in this repository. 
+
+Please refer to [https://github.com/LEChaney/ProceduralCitiesUnity](https://github.com/LEChaney/ProceduralCitiesUnity) for the road and building visualisation modules.
 
 ### Dependencies
 * Python 3.6.x +
