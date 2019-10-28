@@ -18,6 +18,10 @@ from src.stats import compute_proportion_3way_intersections, compute_proportion_
 
 # INPUT:    String, (Bool, Bool)
 # OUTPUT:   Generated city (visualisation)
+# Main function used to generate an intermediate representation of a city.
+# If show_city is true, the representation is visualised using matplotlib.
+# If show_time is true, the process time required to generate the intermediate representation is shown.
+# If show_stats is true, the statistics used to evaluate the representation are shown
 def generate(config_path, show_city=False, show_time=False, show_stats=False):
     if show_time:
         t = time.process_time()
@@ -66,6 +70,7 @@ def generate(config_path, show_city=False, show_time=False, show_stats=False):
 
 # INPUT:    numpy.Array, List, Dict
 # OUTPUT:   matplotlib plot
+# Function used to visualise intermediate representation using matplotlib
 def visualise(water_map_array, road_network, land_usages=None):
     major_segment_coords = [np.array([segment.start_vert.position, segment.end_vert.position]) for segment in road_network 
                             if not segment.is_minor_road]

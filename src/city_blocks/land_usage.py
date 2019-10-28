@@ -48,6 +48,7 @@ def get_land_usage(polygons, config, N=2):
             "industry" : 0,
         }
 
+        # get the land use in the sampled coordinates
         for coord in random_coords:
             sample = config.land_use_array[coord[1]][coord[0]]
             if sample in config.residential_legends:
@@ -57,6 +58,7 @@ def get_land_usage(polygons, config, N=2):
             elif sample in config.industry_legends:
                 land_usages["industry"] += 1
         
+        # determine land use based on the most common observed land use in the samples
         final_use = max(land_usages, key=land_usages.get)
         if land_usages[final_use] == 0:
             final_use = "none"
