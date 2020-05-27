@@ -24,7 +24,7 @@ Note that for some Windows machines, unofficial binaries from Christoph Gohlke m
 
 ### Getting Started
 
-Please `git clone https://github.com/x775/COMPSCI-715.git` to get started. 
+Please `git clone https://github.com/x775/citygenerator.git` to get started. 
 
 In order to generate cities, a dedicated configuration file must be devised. These are positioned in the `/input/configs/` folder. To change which configuration file is loaded, line 108 in `citygenerator.py` needs to be updated accordingly. By default, the included `auckland.json` configuration file will be loaded. Note that a new configuration file must include all relevant parameters; the generator currently does not account for incorrect configuration files.
 
